@@ -1,7 +1,7 @@
 #include <FastLED.h>
-#include "models\acolors.h"
+#include "acolors.h"
+#include "scanner.h"
 // #include "ballmover.h"
-#include "effects\scanner.h"
 #include "datetimeprovider.h"
 
 // How many leds in your strip?

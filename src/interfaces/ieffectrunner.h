@@ -1,7 +1,7 @@
 #pragma once
 
-#include "models\matrixsnapshot.h"
-#include "models\acolors.h"
+#include "matrixsnapshot.h"
+#include "acolors.h"
 
 class IEffectRunner
 {

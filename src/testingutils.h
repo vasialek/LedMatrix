@@ -1,10 +1,10 @@
 #pragma once
 
-#include <iostream>
+// #include <iostream>
 #include "unity.h"
-#include "models\acolors.h"
+#include "acolors.h"
 #include "matrixhelper.h"
-#include "models\matrixsnapshot.h"
+#include "matrixsnapshot.h"
 
 MatrixHelper _testingUtilsHelper;
 
@@ -40,18 +40,18 @@ void AssertNonZeroAt(MatrixSnapshot *snapshot, int x, int y)
 
 void DrawMatrix(MatrixSnapshot *snapshot)
 {
-    int index = 0;
-    std::cout << "--------------------\n";
-    for (size_t y = 0; y < 10; y++)
-    {
-        for (size_t x = 0; x < 10; x++)
-        {
-            index = _testingUtilsHelper.GetMatrixIndex(x, y);
-            // std::cout << (snapshot->cells[index] == 0 ? "o" : "x") << " ";
-            std::cout << _getMatrixColorSymbol(snapshot->cells[index]) << " ";
-        }
-        std::cout << std::endl;
-    }
+    // int index = 0;
+    // std::cout << "--------------------\n";
+    // for (size_t y = 0; y < 10; y++)
+    // {
+    //     for (size_t x = 0; x < 10; x++)
+    //     {
+    //         index = _testingUtilsHelper.GetMatrixIndex(x, y);
+    //         // std::cout << (snapshot->cells[index] == 0 ? "o" : "x") << " ";
+    //         std::cout << _getMatrixColorSymbol(snapshot->cells[index]) << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 }
 
 char _getMatrixColorSymbol(unsigned char symbol)

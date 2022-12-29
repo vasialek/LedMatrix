@@ -1,7 +1,7 @@
 #pragma once
 
-#include "interfaces\ieffectrunner.h"
-#include "models\matrixsnapshot.h"
+#include "effectrunner.h"
+#include "matrixsnapshot.h"
 #include "matrixhelper.h"
 
 class BaseEffectRunner : public IEffectRunner

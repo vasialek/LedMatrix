@@ -1,7 +1,7 @@
 #pragma once
 
-#include "effects\baseeffectrunner.h"
-#include "models\acolors.h"
+#include "baseeffectrunner.h"
+#include "acolors.h"
 
 class RandomPoint : public BaseEffectRunner
 {

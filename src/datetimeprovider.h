@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interfaces\idatetimeprovider.h"
+#include "idatetimeprovider.h"
 
 class DateTimeProvider : public IDateTimeProvider
 {

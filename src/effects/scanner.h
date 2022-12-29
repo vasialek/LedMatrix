@@ -1,10 +1,10 @@
 #pragma once
 
 // #include <iostream>
-#include "models\acolors.h"
-#include "models\matrixsnapshot.h"
+#include "acolors.h"
+#include "matrixsnapshot.h"
 #include "matrixhelper.h"
-#include "interfaces\idatetimeprovider.h"
+#include "idatetimeprovider.h"
 
 class Scanner
 {
