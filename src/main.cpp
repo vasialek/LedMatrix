@@ -2,7 +2,9 @@
 #include "acolors.h"
 #include "scanner.h"
 // #include "ballmover.h"
+#include "life.h"
 #include "datetimeprovider.h"
+#include "randomprovider.h"
 
 // How many leds in your strip?
 #define NUM_LEDS 100
@@ -17,14 +19,18 @@ CRGB leds[NUM_LEDS];
 
 MatrixHelper _matrixHelper;
 DateTimeProvider dateTimeProvider;
+RandomProvider randomProvider;
 // BallMover _ballMover(&_matrixHelper, 10, 10);
-Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
+// Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
+Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, 10, 10, 60);
+// Life *_effect = new Life();
 
 void FillMatrix(MatrixSnapshot *snapshot);
 CRGB MapColorToCrgb(unsigned char color);
 
 void setup()
 {
+    Serial.begin(9600);
     pinMode(LED_BUILTIN, OUTPUT);
 
     for (size_t i = 0; i < 5; i++)
@@ -40,7 +46,11 @@ void setup()
     FastLED.setBrightness(100);
     // _ballMover.SetBall(0, 2);
 
-    _scanner.SetDelayMs(150);
+    // _scanner.SetDelayMs(150);
+    _life.SetDelayMs(1500);
+
+    // Seed random
+    randomSeed(analogRead(0));
 }
 
 void loop()
@@ -48,13 +58,15 @@ void loop()
     FastLED.clear();
 
     // auto snapshot = _ballMover.GetSnapshot();
-    auto snapshot = _scanner.GetSnapshot();
+    // auto snapshot = _scanner.GetSnapshot();
+    auto snapshot = _life.GetSnapshot();
     FillMatrix(snapshot);
 
     FastLED.show();
 
     // _ballMover.Move();
-    _scanner.Move();
+    // _scanner.Move();
+    _life.Move();
     delay(50);
 }
 
