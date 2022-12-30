@@ -61,6 +61,7 @@ Snake::Snake(IDateTimeProvider *dateTimeProvider,
 
 void Snake::Move()
 {
+    _isFinished = false;
     bool debug = false;
     auto now = _dateTimeProvider->millis();
     if (now - _lastMoveAt < _delayMs)
@@ -99,6 +100,7 @@ void Snake::Move()
         }
         
         _length = 1;
+        _isFinished = true;
     }
 
     auto index = _matrixHelper->GetMatrixIndex(_positionX[_length-1], _positionY[_length-1]);

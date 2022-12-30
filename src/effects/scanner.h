@@ -1,20 +1,18 @@
 #pragma once
 
-// #include <iostream>
 #include "acolors.h"
 #include "matrixsnapshot.h"
 #include "matrixhelper.h"
 #include "idatetimeprovider.h"
+#include "baseeffectrunner.h"
 
-class Scanner
+class Scanner : public BaseEffectRunner
 {
 private:
-    int _width = 10, _height = 10;
     int _positions[10];
     int _dYs[10];
-    int _currentColor = ACOLOR_MIN;
-    unsigned long _delayMs = 300;
-    unsigned long _lastMoveAt = 0;
+    int _turns = 0;
+
     IDateTimeProvider *_dateTimeProvider = nullptr;
     MatrixSnapshot _snapshot;
     MatrixHelper *_matrixHelper = nullptr;
@@ -23,10 +21,7 @@ public:
     Scanner(IDateTimeProvider *dateTimeProvider, MatrixHelper *matrixHelper, int width, int height);
 
     void Move();
-
     void Reset();
-    int SwitchNextColor();
-    void SetDelayMs(int delayMs);
     MatrixSnapshot *GetSnapshot();
 
     ~Scanner();
@@ -45,27 +40,29 @@ Scanner::Scanner(IDateTimeProvider *dateTimeProvider, MatrixHelper *matrixHelper
     Reset();    
 }
 
-void Scanner::SetDelayMs(int delayMs)
-{
-    _delayMs = delayMs;
-}
-
 void Scanner::Move()
 {
     auto now = _dateTimeProvider->millis();
-    // std::cout << "  now: " << now << ", last move at " << _lastMoveAt << "\n";
     if (now - _lastMoveAt < _delayMs)
     {
         return;
     }
     _lastMoveAt = now;
 
+    _isFinished = false;
     for (size_t x = 0; x < _width; x++)
     {
         if (_positions[x] + _dYs[x] >= _height)
         {
             _currentColor = SwitchNextColor();
             _dYs[x] = -_dYs[x];
+
+            _turns++;
+            if (_turns >= ACOLOR_MAX)
+            {
+                _isFinished = true;
+                _turns = 0;
+            }
         }
         if (_positions[x] + _dYs[x] < 0)
         {
@@ -81,6 +78,7 @@ void Scanner::Reset()
 {
     _lastMoveAt = 0;
     _currentColor = ACOLOR_MIN;
+    _turns = 0;
     for (int i = 0; i < _snapshot.totalCells; i++)
     {
         _snapshot.cells[i] = 0;
@@ -96,17 +94,6 @@ void Scanner::Reset()
         _positions[x] = 9;
         _dYs[x] = -1;
     }
-}
-
-int Scanner::SwitchNextColor()
-{
-    _currentColor++;
-    if (_currentColor > ACOLOR_MAX)
-    {
-        _currentColor = ACOLOR_MIN;
-    }
-
-    return _currentColor;
 }
 
 MatrixSnapshot *Scanner::GetSnapshot()

@@ -11,14 +11,27 @@ protected:
     int _delayMs = 1;
     unsigned long _lastMoveAt = 0;
     int _currentColor = ACOLOR_MIN;
+    bool _isFinished = true;
 
     MatrixSnapshot _snapshot;
 
     int GetNextColor();
 public:
+    bool IsFinished();
+    void Restart();
     int SetDelayMs(int delayMs);
     int SwitchNextColor();
 };
+
+inline bool BaseEffectRunner::IsFinished()
+{
+    return _isFinished;
+}
+
+inline void BaseEffectRunner::Restart()
+{
+    _isFinished = false;
+}
 
 int BaseEffectRunner::SetDelayMs(int delayMs)
 {
