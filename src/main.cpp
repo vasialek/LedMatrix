@@ -1,8 +1,10 @@
 #include <FastLED.h>
 #include "acolors.h"
+#include "baseeffectrunner.h"
 #include "scanner.h"
 // #include "ballmover.h"
 #include "life.h"
+#include "snake.h"
 #include "datetimeprovider.h"
 #include "randomprovider.h"
 
@@ -23,7 +25,8 @@ RandomProvider randomProvider;
 // BallMover _ballMover(&_matrixHelper, 10, 10);
 // Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
 Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, 10, 10, 60);
-// Life *_effect = new Life();
+Snake _snake(&dateTimeProvider, &randomProvider, &_matrixHelper, 9, 0, -1, 1);
+// BaseEffectRunner _snake()
 
 void FillMatrix(MatrixSnapshot *snapshot);
 CRGB MapColorToCrgb(unsigned char color);
@@ -47,7 +50,8 @@ void setup()
     // _ballMover.SetBall(0, 2);
 
     // _scanner.SetDelayMs(150);
-    _life.SetDelayMs(1500);
+    _snake.SetDelayMs(180);
+    // _life.SetDelayMs(1500);
 
     // Seed random
     randomSeed(analogRead(0));
@@ -59,14 +63,16 @@ void loop()
 
     // auto snapshot = _ballMover.GetSnapshot();
     // auto snapshot = _scanner.GetSnapshot();
-    auto snapshot = _life.GetSnapshot();
+    // auto snapshot = _life.GetSnapshot();
+    auto snapshot = _snake.GetSnapshot();
     FillMatrix(snapshot);
 
     FastLED.show();
 
     // _ballMover.Move();
     // _scanner.Move();
-    _life.Move();
+    // _life.Move();
+    _snake.Move();
     delay(50);
 }
 
