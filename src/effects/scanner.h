@@ -58,7 +58,7 @@ void Scanner::Move()
             _dYs[x] = -_dYs[x];
 
             _turns++;
-            if (_turns >= ACOLOR_MAX)
+            if (_turns >= ACOLOR_MAX * _width)
             {
                 _isFinished = true;
                 _turns = 0;

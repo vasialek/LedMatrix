@@ -23,13 +23,15 @@ MatrixHelper _matrixHelper;
 DateTimeProvider dateTimeProvider;
 RandomProvider randomProvider;
 // BallMover _ballMover(&_matrixHelper, 10, 10);
-// Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
+Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
 Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, 10, 10, 60);
 Snake _snake(&dateTimeProvider, &randomProvider, &_matrixHelper, 9, 0, -1, 1);
-// BaseEffectRunner _snake()
+BaseEffectRunner *_currentEffect = nullptr;
+int _currentEffectNr = 0;
 
 void FillMatrix(MatrixSnapshot *snapshot);
 CRGB MapColorToCrgb(unsigned char color);
+BaseEffectRunner *SwicthNextEffect();
 
 void setup()
 {
@@ -49,9 +51,11 @@ void setup()
     FastLED.setBrightness(100);
     // _ballMover.SetBall(0, 2);
 
-    // _scanner.SetDelayMs(150);
+    _scanner.SetDelayMs(150);
     _snake.SetDelayMs(180);
-    // _life.SetDelayMs(1500);
+    _life.SetDelayMs(1500);
+
+    _currentEffect = SwicthNextEffect();
 
     // Seed random
     randomSeed(analogRead(0));
@@ -61,18 +65,41 @@ void loop()
 {
     FastLED.clear();
 
+    auto snapshot = _currentEffect->GetSnapshot();
     // auto snapshot = _ballMover.GetSnapshot();
     // auto snapshot = _scanner.GetSnapshot();
     // auto snapshot = _life.GetSnapshot();
-    auto snapshot = _snake.GetSnapshot();
+    // auto snapshot = _snake.GetSnapshot();
     FillMatrix(snapshot);
 
     FastLED.show();
 
-    // _ballMover.Move();
+    _currentEffect->Move();
+    if (_currentEffect->IsFinished())
+    {
+        SwicthNextEffect();
+    }
+
     // _scanner.Move();
+    // if (_scanner.IsFinished())
+    // {
+    //     auto snapshot = _life.GetSnapshot();
+    //     FillMatrix(snapshot);
+    //     FastLED.show();
+    //     delay(20000);
+    // }
+    
     // _life.Move();
-    _snake.Move();
+    // _snake.Move();
+    // if (_snake.IsFinished())
+    // {
+    //     auto snapshot = _life.GetSnapshot();
+    //     FillMatrix(snapshot);
+    //     FastLED.show();
+    //     delay(20000);
+    //     _snake.Restart();
+    // }
+    
     delay(50);
 }
 
@@ -99,4 +126,33 @@ CRGB MapColorToCrgb(unsigned char color)
     default:
         return CRGB::Green;
     }
+}
+
+BaseEffectRunner *SwicthNextEffect()
+{
+    /*
+    *   1:  Snake
+    *   2:  Scanner
+    *   3:  Life
+    */
+    _currentEffectNr++;
+    Serial.print("New effect nr: ");
+    Serial.println(_currentEffectNr);
+    switch (_currentEffectNr)
+    {
+    case 1:
+        _currentEffect = &_snake;
+        break;
+
+    // case 3:
+    //     _currentEffect = &_life;
+    //     break;
+    
+    default:
+        _currentEffectNr = 0;
+        _currentEffect = &_scanner;
+        break;
+    }
+
+    return _currentEffect;
 }
