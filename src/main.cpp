@@ -131,9 +131,11 @@ CRGB MapColorToCrgb(unsigned char color)
 BaseEffectRunner *SwicthNextEffect()
 {
     /*
-    *   1:  Snake
-    *   2:  Scanner
-    *   3:  Life
+    *   1:  Scanner
+    *   2:  Snake
+    *   3:  Scanner
+    *   4:  Life
+    *   5:  Scanner
     */
     _currentEffectNr++;
     Serial.print("New effect nr: ");
@@ -141,12 +143,18 @@ BaseEffectRunner *SwicthNextEffect()
     switch (_currentEffectNr)
     {
     case 1:
+    case 3:
+    case 5:
+        _currentEffect = &_scanner;
+        break;
+
+    case 2:
         _currentEffect = &_snake;
         break;
 
-    // case 3:
-    //     _currentEffect = &_life;
-    //     break;
+    case 4:
+        _currentEffect = &_life;
+        break;
     
     default:
         _currentEffectNr = 0;

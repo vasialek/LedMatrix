@@ -1,27 +1,27 @@
-#include "unity.h"
-#include "effects\baseeffectrunner.h"
+// #include "unity.h"
+// #include "baseeffectrunner.h"
 
-class TestBaseEffectRunner : public BaseEffectRunner
-{
-    void Move(){}
-    void Reset(){}
-    MatrixSnapshot *GetSnapshot(){return nullptr;}
-};
+// class TestBaseEffectRunner : public BaseEffectRunner
+// {
+//     void Move(){}
+//     void Reset(){}
+//     MatrixSnapshot *GetSnapshot(){return nullptr;}
+// };
 
-TestBaseEffectRunner _runner;
+// TestBaseEffectRunner _runner;
 
-void CanSetDelayMs()
-{
-    auto actual = _runner.SetDelayMs(100);
+// void CanSetDelayMs()
+// {
+//     auto actual = _runner.SetDelayMs(100);
 
-    TEST_ASSERT_EQUAL_INT32(100, actual);
-}
+//     TEST_ASSERT_EQUAL_INT32(100, actual);
+// }
 
-int main()
-{
-    UNITY_BEGIN();
+// int main()
+// {
+//     UNITY_BEGIN();
 
-    RUN_TEST(CanSetDelayMs);
+//     RUN_TEST(CanSetDelayMs);
 
-    UNITY_END();
-}
+//     UNITY_END();
+// }

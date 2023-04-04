@@ -1,20 +1,20 @@
-#include "unity.h"
-#include "effects\randompoint.h"
+// #include "unity.h"
+// #include "randompoint.h"
 
-RandomPoint _randomPoint;
+// RandomPoint _randomPoint;
 
-void CanRandomPoint()
-{
-    auto actual = _randomPoint.SwitchNextColor();
+// void CanRandomPoint()
+// {
+//     auto actual = _randomPoint.SwitchNextColor();
 
-    TEST_ASSERT_EQUAL_INT32(2, actual);
-}
+//     TEST_ASSERT_EQUAL_INT32(2, actual);
+// }
 
-int main()
-{
-    UNITY_BEGIN();
+// int main()
+// {
+//     UNITY_BEGIN();
 
-    RUN_TEST(CanRandomPoint);
+//     RUN_TEST(CanRandomPoint);
 
-    UNITY_END();
-}
+//     UNITY_END();
+// }

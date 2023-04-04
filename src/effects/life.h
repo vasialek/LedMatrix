@@ -5,17 +5,14 @@
 #include "matrixhelper.h"
 #include "idatetimeprovider.h"
 #include "irandomprovider.h"
+#include "baseeffectrunner.h"
 
-class Life
+class Life : public BaseEffectRunner
 {
 private:
-    int _width = 10, _height = 10;
     int _initialCells = 15;
     char _cells[100];
     int _turn = 0;
-    int _currentColor = ACOLOR_MIN;
-    unsigned long _delayMs = 300;
-    unsigned long _lastMoveAt = 0;
     IDateTimeProvider *_dateTimeProvider = nullptr;
     IRandomProvider *_randomProvider = nullptr;
     MatrixSnapshot _snapshot;
@@ -36,7 +33,6 @@ public:
     void Move();
     void Reset();
     int SwitchNextColor();
-    void SetDelayMs(int delayMs);
     MatrixSnapshot *GetSnapshot();
 
     ~Life();
@@ -76,18 +72,13 @@ inline void Life::Move()
     _lastMoveAt = now;
 
     auto updatedCells = 0;
+    _isFinished = false;
     for (auto x = 0; x < _width; x++)
     {
         for (auto y = 0; y < _height; y++)
         {
-            // Serial.print("Neighbours for [");
-            // Serial.print(x);
-            // Serial.print(", ");
-            // Serial.print(y);
-            // Serial.print("] is: ");
             auto index = _matrixHelper->GetMatrixIndex(x, y);
             auto neighbours = CountNeighbours(x, y);
-            // Serial.println(neighbours);
 
             switch (neighbours)
             {
@@ -117,6 +108,7 @@ inline void Life::Move()
     {
         _currentColor = SwitchNextColor();
        Reset();
+       _isFinished = true;
        return;
     }
     
@@ -128,7 +120,8 @@ inline void Life::Move()
     if (liveCells < 1)
     {
        _currentColor = SwitchNextColor();
-       Reset(); 
+       Reset();
+       _isFinished = true;
     }
 }
 
@@ -157,11 +150,6 @@ inline int Life::SwitchNextColor()
     }
 
     return _currentColor;
-}
-
-inline void Life::SetDelayMs(int delayMs)
-{
-    _delayMs = delayMs;
 }
 
 inline MatrixSnapshot *Life::GetSnapshot()
