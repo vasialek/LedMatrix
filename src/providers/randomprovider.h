@@ -1,6 +1,6 @@
 #pragma once
 
-#include "randomprovider.h"
+#include "irandomprovider.h"
 
 class RandomProvider : public IRandomProvider
 {
