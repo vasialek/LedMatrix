@@ -47,6 +47,7 @@ char *SerialLogger::GetTime() {
     int seconds = millis / 1000;
     int hours = seconds / 3600;
     seconds -= hours * 3600;
+    hours = hours % 24;
     int minutes = seconds / 60;
     seconds -= minutes * 60;
 

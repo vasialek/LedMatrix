@@ -1,15 +1,41 @@
+// temporary for testing
+#include <cstdlib>
+#include <chrono>
+#include <thread>
+#ifndef ARDUINO
+    #include<unistd.h>
+#endif
+void ClearScreen() {
+#ifdef WINDOWS
+    std::system("cls");
+#else
+    std::system ("clear");
+#endif
+}
+void Delay(int ms) {
+#ifdef ARDUINO
+    delay(ms * 1000);
+#else
+    usleep(ms * 1000);
+#endif
+}
+
 // #include <FastLED.h>
 #include "ilogger.h"
 #include "seriallogger.h"
 #include "consolelogger.h"
 #include "acolors.h"
 #include "baseeffectrunner.h"
+#include "mazegenerator.h"
 // #include "scanner.h"
 // #include "ballmover.h"
 // #include "life.h"
 // #include "snake.h"
 #include "datetimeprovider.h"
 // #include "randomprovider.h"
+
+const int Width = 10;
+const int Height = 10;
 
 // How many leds in your strip?
 #define NUM_LEDS 100
@@ -24,25 +50,63 @@
 
 // MatrixHelper _matrixHelper;
 DateTimeProvider dateTimeProvider;
-ILogger *logger = new ConsoleLogger();
-// ILogger *logger = new SerialLogger(&dateTimeProvider);
+// ILogger *logger = new ConsoleLogger();
+ILogger *logger = new SerialLogger(&dateTimeProvider);
 // RandomProvider randomProvider;
-// BallMover _ballMover(&_matrixHelper, 10, 10);
-// Scanner _scanner(&dateTimeProvider, &_matrixHelper, 10, 10);
-// Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, 10, 10, 60);
+// BallMover _ballMover(&_matrixHelper, Width, Height);
+// Scanner _scanner(&dateTimeProvider, &_matrixHelper, Width, Height);
+// Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, Width, Height, 60);
 // Snake _snake(&dateTimeProvider, &randomProvider, &_matrixHelper, 9, 0, -1, 1);
+MazeGenerator _mazeGenerator(logger, Width, Height);
 BaseEffectRunner *_currentEffect = nullptr;
 int _currentEffectNr = 0;
 
 // void FillMatrix(MatrixSnapshot *snapshot);
 // CRGB MapColorToCrgb(unsigned char color);
 // BaseEffectRunner *SwicthNextEffect();
+void ShowMatrix(MatrixSnapshot *snapshot);
 
 int main() {
     logger->Info("Working?");
     logger->Debug("Working as debug?");
+
+    _currentEffect = &_mazeGenerator;
+
+    for (size_t i = 0; i < 100; i++)
+    {
+        auto snapshot = _currentEffect->GetSnapshot();
+        ClearScreen();
+        ShowMatrix(snapshot);
+
+        if (_currentEffect->IsFinished()) {
+            return 0;
+        }
+
+        _currentEffect->Move();
+        Delay(700);
+    }
+    
+
     return 0;
 }
+
+void ShowMatrix(MatrixSnapshot *snapshot) {
+    char buf[Width + 3];
+    int index = 0;
+    for (int i = 0; i < Height; i++)
+    {
+        buf[0] = '|';
+        for (int x = 0; x < Width; x++)
+        {
+            buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? ' ' : '#';
+            index++;
+        }
+        buf[Width] = '|';
+        buf[Width + 1] = 0;
+        logger->Info(buf);
+    }
+}
+
 
 // void setup()
 // {
