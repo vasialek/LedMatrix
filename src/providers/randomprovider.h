@@ -5,6 +5,9 @@
 class RandomProvider : public IRandomProvider
 {
 public:
+    RandomProvider() {
+        srand(time(nullptr));
+    }
     int Random(int max) override;
 };
 
@@ -13,6 +16,10 @@ int RandomProvider::Random(int max)
     #ifdef ARDUINO
         return random(max);
     #else
-        return 0;
+        #ifdef WINDOWS
+            return 0;
+        #else
+            return rand() % max;
+        #endif
     #endif
 }

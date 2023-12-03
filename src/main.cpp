@@ -49,15 +49,16 @@ const int Height = 10;
 // CRGB leds[NUM_LEDS];
 
 // MatrixHelper _matrixHelper;
-DateTimeProvider dateTimeProvider;
+DateTimeProvider _dateTimeProvider;
 // ILogger *logger = new ConsoleLogger();
-ILogger *logger = new SerialLogger(&dateTimeProvider);
-// RandomProvider randomProvider;
+ILogger *logger = new SerialLogger(&_dateTimeProvider);
+RandomProvider _randomProvider;
 // BallMover _ballMover(&_matrixHelper, Width, Height);
-// Scanner _scanner(&dateTimeProvider, &_matrixHelper, Width, Height);
-// Life _life(&dateTimeProvider, &randomProvider, &_matrixHelper, Width, Height, 60);
-// Snake _snake(&dateTimeProvider, &randomProvider, &_matrixHelper, 9, 0, -1, 1);
-MazeGenerator _mazeGenerator(logger, Width, Height);
+// Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
+// Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
+// Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
+MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
+MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
 BaseEffectRunner *_currentEffect = nullptr;
 int _currentEffectNr = 0;
 
@@ -74,8 +75,8 @@ int main() {
 
     for (size_t i = 0; i < 100; i++)
     {
-        auto snapshot = _currentEffect->GetSnapshot();
         ClearScreen();
+        auto snapshot = _currentEffect->GetSnapshot();
         ShowMatrix(snapshot);
 
         if (_currentEffect->IsFinished()) {
@@ -83,7 +84,7 @@ int main() {
         }
 
         _currentEffect->Move();
-        Delay(700);
+        Delay(3000);
     }
     
 
