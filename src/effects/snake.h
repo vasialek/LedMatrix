@@ -1,9 +1,10 @@
 #pragma once
 
-#include "datetimeprovider.h"
-#include "matrixhelper.h"
-#include "randomprovider.h"
-#include "baseeffectrunner.h"
+#include "../models/acolors.h"
+#include "../datetimeprovider.h"
+#include "../matrixhelper.h"
+#include "../providers/randomprovider.h"
+#include "../effects/baseeffectrunner.h"
 
 const int MaxLength = 25;
 
@@ -15,9 +16,9 @@ private:
     int _positionY[MaxLength];
     int _dx = 1, _dy = 1;
     int _targetX = 0, _targetY = 0;
-    IDateTimeProvider *_dateTimeProvider = nullptr;
-    IRandomProvider *_randomProvider = nullptr;
-    MatrixHelper *_matrixHelper = nullptr;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
+    IRandomProvider* _randomProvider = nullptr;
+    MatrixHelper* _matrixHelper = nullptr;
 
     bool SnakeHitTarget();
     void SetNewTarget(int y);
@@ -26,22 +27,22 @@ private:
     void DebugPoint(int x, int y);
 
 public:
-    Snake(IDateTimeProvider *dateTimeProvider,
-            IRandomProvider *randomProvider,
-            MatrixHelper *matrixHelper,
-            int x, int y,
-            int dx, int dy);
+    Snake(IDateTimeProvider* dateTimeProvider,
+          IRandomProvider* randomProvider,
+          MatrixHelper* matrixHelper,
+          int x, int y,
+          int dx, int dy);
 
     void Move();
     void Reset();
-    MatrixSnapshot *GetSnapshot();
-    
+    MatrixSnapshot* GetSnapshot();
+
     ~Snake();
 };
 
-Snake::Snake(IDateTimeProvider *dateTimeProvider,
-             IRandomProvider *randomProvider,
-             MatrixHelper *matrixHelper,
+Snake::Snake(IDateTimeProvider* dateTimeProvider,
+             IRandomProvider* randomProvider,
+             MatrixHelper* matrixHelper,
              int x, int y,
              int dx, int dy)
 {
@@ -77,7 +78,8 @@ void Snake::Move()
         x = 0;
         y += _dy;
         _dx = -_dx;
-    } else if (x >= _width)
+    }
+    else if (x >= _width)
     {
         x = _width - 1;
         y += _dy;
@@ -88,7 +90,8 @@ void Snake::Move()
         y = _height - 1;
         _dy = -_dy;
         _dx = -_dx;
-    } else if (y < 0)
+    }
+    else if (y < 0)
     {
         y = 0;
         _dy = -_dy;
@@ -98,12 +101,12 @@ void Snake::Move()
             auto index = _matrixHelper->GetMatrixIndex(_positionX[i], _positionY[i]);
             _snapshot.cells[index] = ACOLOR_OFF;
         }
-        
+
         _length = 1;
         _isFinished = true;
     }
 
-    auto index = _matrixHelper->GetMatrixIndex(_positionX[_length-1], _positionY[_length-1]);
+    auto index = _matrixHelper->GetMatrixIndex(_positionX[_length - 1], _positionY[_length - 1]);
     // Serial.print("Deleting point at: ");
     // DebugPoint(_positionX[_length-1], _positionY[_length-1]);
     // Serial.println();
@@ -123,10 +126,9 @@ void Snake::Move()
 
     for (auto i = _length - 1; i > 0; i--)
     {
-        _positionX[i] = _positionX[i-1];
-        _positionY[i] = _positionY[i-1];
+        _positionX[i] = _positionX[i - 1];
+        _positionY[i] = _positionY[i - 1];
     }
-    
 
     _positionX[0] = x;
     _positionY[0] = y;
@@ -149,7 +151,7 @@ inline void Snake::Reset()
     SwitchNextColor();
 }
 
-inline MatrixSnapshot *Snake::GetSnapshot()
+inline MatrixSnapshot* Snake::GetSnapshot()
 {
     for (auto i = 0; i < _length; i++)
     {
@@ -158,7 +160,7 @@ inline MatrixSnapshot *Snake::GetSnapshot()
     }
     auto index = _matrixHelper->GetMatrixIndex(_targetX, _targetY);
     _snapshot.cells[index] = ACOLOR_RED;
-    
+
     return &_snapshot;
 }
 
@@ -174,7 +176,8 @@ inline void Snake::SetNewTarget(int y)
     if (targetY < 0)
     {
         targetY = _length > 6 ? 2 : 1;
-    } else if (targetY > _height - 1)
+    }
+    else if (targetY > _height - 1)
     {
         targetY = _height - 2;
     }
@@ -185,29 +188,29 @@ inline void Snake::SetNewTarget(int y)
 inline int Snake::SwitchNextColor()
 {
     _currentColor = _currentColor == ACOLOR_BLUE ? ACOLOR_GREEN : ACOLOR_BLUE;
-    Serial.println(_currentColor);
+    // Serial.println(_currentColor);
     return _currentColor;
 }
 
 inline void Snake::DebugSnake()
 {
-    Serial.print("Snake length is ");
-    Serial.print(_length);
-    Serial.print(": [");
-    for (auto i = 0; i < _length; i++)
-    {
-        DebugPoint(_positionX[i], _positionY[i]);
-    }
-    Serial.println("]");
+    // Serial.print("Snake length is ");
+    // Serial.print(_length);
+    // Serial.print(": [");
+    // for (auto i = 0; i < _length; i++)
+    // {
+    // DebugPoint(_positionX[i], _positionY[i]);
+    // }
+    // Serial.println("]");
 }
 
 inline void Snake::DebugPoint(int x, int y)
 {
-    Serial.print("(");
-    Serial.print(x);
-    Serial.print(", ");
-    Serial.print(y);
-    Serial.print(") ");
+    // Serial.print("(");
+    // Serial.print(x);
+    // Serial.print(", ");
+    // Serial.print(y);
+    // Serial.print(") ");
 }
 
 Snake::~Snake()
@@ -217,4 +220,3 @@ Snake::~Snake()
         delete []_snapshot.cells;
     }
 }
-

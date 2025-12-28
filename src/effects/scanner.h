@@ -1,10 +1,10 @@
 #pragma once
 
-#include "acolors.h"
-#include "matrixsnapshot.h"
-#include "matrixhelper.h"
-#include "idatetimeprovider.h"
-#include "baseeffectrunner.h"
+#include "../models/acolors.h"
+#include "../models/matrixsnapshot.h"
+#include "../matrixhelper.h"
+#include "../interfaces/idatetimeprovider.h"
+#include "../effects/baseeffectrunner.h"
 
 class Scanner : public BaseEffectRunner
 {
@@ -13,21 +13,21 @@ private:
     int _dYs[10];
     int _turns = 0;
 
-    IDateTimeProvider *_dateTimeProvider = nullptr;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
     MatrixSnapshot _snapshot;
-    MatrixHelper *_matrixHelper = nullptr;
+    MatrixHelper* _matrixHelper = nullptr;
 
 public:
-    Scanner(IDateTimeProvider *dateTimeProvider, MatrixHelper *matrixHelper, int width, int height);
+    Scanner(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, int width, int height);
 
     void Move();
     void Reset();
-    MatrixSnapshot *GetSnapshot();
+    MatrixSnapshot* GetSnapshot();
 
     ~Scanner();
 };
 
-Scanner::Scanner(IDateTimeProvider *dateTimeProvider, MatrixHelper *matrixHelper, int width, int height)
+Scanner::Scanner(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, int width, int height)
 {
     _dateTimeProvider = dateTimeProvider;
     _matrixHelper = matrixHelper;
@@ -37,7 +37,7 @@ Scanner::Scanner(IDateTimeProvider *dateTimeProvider, MatrixHelper *matrixHelper
     _snapshot.totalCells = _width * _height;
     _snapshot.cells = new unsigned char[_width * _height];
 
-    Reset();    
+    Reset();
 }
 
 void Scanner::Move()
@@ -68,10 +68,9 @@ void Scanner::Move()
         {
             _dYs[x] = -_dYs[x];
         }
-        
+
         _positions[x] += _dYs[x];
     }
-    
 }
 
 void Scanner::Reset()
@@ -96,7 +95,7 @@ void Scanner::Reset()
     }
 }
 
-MatrixSnapshot *Scanner::GetSnapshot()
+MatrixSnapshot* Scanner::GetSnapshot()
 {
     for (int i = 0; i < _snapshot.totalCells; i++)
     {
@@ -108,7 +107,7 @@ MatrixSnapshot *Scanner::GetSnapshot()
         auto index = _matrixHelper->GetMatrixIndex(x, _positions[x]);
         _snapshot.cells[index] = _currentColor;
     }
-    
+
     return &_snapshot;
 }
 

@@ -1,15 +1,53 @@
-// temporary for testing
-#include <cstdlib>
-#include <chrono>
-#include <thread>
-#ifndef ARDUINO
-    #include<unistd.h>
+#include "effects/snake.h"
+#ifdef ARDUINO
+#include "loggers/seriallogger.h"
+#else
+#include "loggers/consolelogger.h"
 #endif
+
+#include "interfaces/ilogger.h"
+#include "datetimeprovider.h"
+
+// ILogger *logger;
+DateTimeProvider _dateTimeProvider;
+
+#ifdef ARDUINO
+    ILogger *logger = new SerialLogger(&_dateTimeProvider);
+#else
+    ILogger *_logger = new ConsoleLogger();
+#endif
+
+#include "interfaces/ilogger.h"
+#ifdef ARDUINO
+    #include <Arduino.h>
+    #include "loggers/seriallogger.h"
+    #include <FastLED.h>
+#else
+    #include <cstdlib>
+    #include <unistd.h>
+    #include "loggers/consolelogger.h"
+#endif
+#include "interfaces/ilogger.h"
+// #include "ilogger.h"
+// #include "seriallogger.h"
+// #include "loggers/consolelogger.h"
+#include "models/acolors.h"
+#include "effects/baseeffectrunner.h"
+// #include "mazegenerator.h"
+#include "effects/scanner.h"
+#include "effects/finalcountdowneffect.h"
+#include "ballmover.h"
+// #include "life.h"
+// #include "snake.h"
+#include "datetimeprovider.h"
+#include "providers/randomprovider.h"
+
 void ClearScreen() {
-#ifdef WINDOWS
+#ifdef ARDUINO
+#elif defined(WINDOWS)
     std::system("cls");
 #else
-    std::system ("clear");
+    std::system("clear");
 #endif
 }
 void Delay(int ms) {
@@ -19,20 +57,6 @@ void Delay(int ms) {
     usleep(ms * 1000);
 #endif
 }
-
-// #include <FastLED.h>
-#include "ilogger.h"
-#include "seriallogger.h"
-#include "consolelogger.h"
-#include "acolors.h"
-#include "baseeffectrunner.h"
-#include "mazegenerator.h"
-// #include "scanner.h"
-// #include "ballmover.h"
-// #include "life.h"
-// #include "snake.h"
-#include "datetimeprovider.h"
-// #include "randomprovider.h"
 
 const int Width = 10;
 const int Height = 10;
@@ -48,17 +72,16 @@ const int Height = 10;
 // Define the array of leds
 // CRGB leds[NUM_LEDS];
 
-// MatrixHelper _matrixHelper;
-DateTimeProvider _dateTimeProvider;
-// ILogger *logger = new ConsoleLogger();
-ILogger *logger = new SerialLogger(&_dateTimeProvider);
+MatrixHelper _matrixHelper;
 RandomProvider _randomProvider;
 // BallMover _ballMover(&_matrixHelper, Width, Height);
-// Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
+Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
+FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
 // Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
 // Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
-MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
-MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
+// MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
+// MazeBuilder mazeBuilder(&_randomProvider, logger, 5, 5);
+// MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
 BaseEffectRunner *_currentEffect = nullptr;
 int _currentEffectNr = 0;
 
@@ -68,12 +91,18 @@ int _currentEffectNr = 0;
 void ShowMatrix(MatrixSnapshot *snapshot);
 
 int main() {
-    logger->Info("Working?");
-    logger->Debug("Working as debug?");
 
-    _currentEffect = &_mazeGenerator;
+    _currentEffect = &_finalCountdownEffect;
+    // _currentEffect = &_scanner;
+    // _currentEffect = &_snake;
+    // char buffer[128];
+    // sprintf(buffer, "Before: %lu", _dateTimeProvider.millis());
+    // _logger->Info(buffer);
+    // Delay(2000);
+    // sprintf(buffer, "After:  %lu", _dateTimeProvider.millis());
+    // _logger->Info(buffer);
 
-    for (size_t i = 0; i < 100; i++)
+    for (size_t i = 0; i < 100 && !_currentEffect->IsFinished(); i++)
     {
         ClearScreen();
         auto snapshot = _currentEffect->GetSnapshot();
@@ -84,14 +113,19 @@ int main() {
         }
 
         _currentEffect->Move();
-        Delay(3000);
+        Delay(100);
     }
-    
+
 
     return 0;
 }
 
-void ShowMatrix(MatrixSnapshot *snapshot) {
+void ShowMatrix(MatrixSnapshot* snapshot)
+{
+    if (snapshot == nullptr)
+    {
+        return;
+    }
     char buf[Width + 3];
     int index = 0;
     for (int i = 0; i < Height; i++)
@@ -99,12 +133,12 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
         buf[0] = '|';
         for (int x = 0; x < Width; x++)
         {
-            buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? ' ' : '#';
+            buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? '.' : '#';
             index++;
         }
-        buf[Width] = '|';
-        buf[Width + 1] = 0;
-        logger->Info(buf);
+        buf[Width + 1] = '|';
+        buf[Width + 2] = 0;
+        _logger->Info(buf);
     }
 }
 
@@ -113,6 +147,8 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 // {
 //     Serial.begin(9600);
 //     pinMode(LED_BUILTIN, OUTPUT);
+// FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+
 
 //     for (size_t i = 0; i < 5; i++)
 //     {
@@ -121,7 +157,7 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 //         digitalWrite(LED_BUILTIN, LOW);
 //         delay(500);
 //     }
-    
+
 
 //     FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
 //     FastLED.setBrightness(100);
@@ -164,7 +200,7 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 //     //     FastLED.show();
 //     //     delay(20000);
 //     // }
-    
+
 //     // _life.Move();
 //     // _snake.Move();
 //     // if (_snake.IsFinished())
@@ -175,7 +211,7 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 //     //     delay(20000);
 //     //     _snake.Restart();
 //     // }
-    
+
 //     delay(50);
 // }
 
@@ -199,6 +235,16 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 //         return CRGB::Yellow;
 //     case ACOLOR_RED:
 //         return CRGB::Red;
+//     case ACOLOR_CYAN:
+//         return CRGB::Cyan;
+//     case ACOLOR_PURPLE:
+//         return CRGB::Purple;
+//     case ACOLOR_ORANGE:
+//         return CRGB::Orange;
+//     case ACOLOR_PINK:
+//         return CRGB::DeepPink;
+//     case ACOLOR_WHITE:
+//         return CRGB::White;
 //     default:
 //         return CRGB::Green;
 //     }
@@ -231,7 +277,7 @@ void ShowMatrix(MatrixSnapshot *snapshot) {
 //     case 4:
 //         _currentEffect = &_life;
 //         break;
-    
+
 //     default:
 //         _currentEffectNr = 0;
 //         _currentEffect = &_scanner;

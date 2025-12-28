@@ -27,19 +27,23 @@ MazeGenerator::MazeGenerator(MazeBuilder *mazeBuilder, ILogger *logger, int widt
     _isFinished = false;
     _snapshot.totalCells = _width * _height;
     _snapshot.cells = new unsigned char[_width * _height];
+
+    _mazeBuilder->Test();
 }
 
 void MazeGenerator::Move() {
-    char buf[128];
-    sprintf(buf, "Building line #%d", _currentLine);
-    _logger->Debug(buf);
-    if (_currentLine >= _height - 1)
-    {
-        _isFinished = true;
-    }
+    _isFinished = true;
+    // char buf[128];
+    // sprintf(buf, "Building line #%d", _currentLine);
+    // _logger->Debug(buf);
 
-    _mazeBuilder->BuildLine(_currentLine);
-    _currentLine++;
+    // if (_currentLine >= _height - 1)
+    // {
+    //     _isFinished = true;
+    // }
+
+    // _mazeBuilder->BuildLine(_currentLine);
+    // _currentLine++;
 }
 
 void MazeGenerator::Reset() {

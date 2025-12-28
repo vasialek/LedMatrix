@@ -1,8 +1,7 @@
 #pragma once
 
-#include "ieffectrunner.h"
-#include "matrixsnapshot.h"
-#include "matrixhelper.h"
+#include "../interfaces/ieffectrunner.h"
+#include "../models/matrixsnapshot.h"
 
 class BaseEffectRunner : public IEffectRunner
 {
@@ -16,6 +15,8 @@ protected:
     MatrixSnapshot _snapshot;
 
     int GetNextColor();
+    void FillMatrix(int color = ACOLOR_OFF);
+
 public:
     bool IsFinished();
     void Restart();
@@ -54,4 +55,17 @@ int BaseEffectRunner::SwitchNextColor()
 {
     _currentColor = GetNextColor();
     return _currentColor;
+}
+
+void BaseEffectRunner::FillMatrix(int color)
+{
+    if (_snapshot.cells == nullptr)
+    {
+        return;
+    }
+
+    for (int i = 0; i < _snapshot.totalCells; i++)
+    {
+        _snapshot.cells[i] = color;
+    }
 }

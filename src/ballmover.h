@@ -1,6 +1,6 @@
 #pragma once
 
-#include "matrixsnapshot.h"
+#include "models/matrixsnapshot.h"
 #include "matrixhelper.h"
 
 // #include <iostream>
@@ -12,19 +12,20 @@ private:
     int _ballX = 0, _ballY = 0;
     int _ballDx = 1, _ballDy = 1;
     MatrixSnapshot _snapshot;
-    MatrixHelper *_matrixHelper = nullptr;
+    MatrixHelper* _matrixHelper = nullptr;
+
 public:
-    BallMover(MatrixHelper *matrixHelper, int width, int height);
+    BallMover(MatrixHelper* matrixHelper, int width, int height);
     void SetBall(int ballX, int ballY);
     void Move();
     int ReverseDx();
     int ReverseDy();
-    MatrixSnapshot *GetSnapshot();
+    MatrixSnapshot* GetSnapshot();
 
     ~BallMover();
 };
 
-BallMover::BallMover(MatrixHelper *matrixHelper, int width, int height)
+BallMover::BallMover(MatrixHelper* matrixHelper, int width, int height)
 {
     _matrixHelper = matrixHelper;
     _width = width;
@@ -52,12 +53,12 @@ void BallMover::Move()
     {
         ReverseDx();
     }
-    
+
     if (_ballY + _ballDy >= _height || _ballY + _ballDy < 0)
     {
         ReverseDy();
     }
-    
+
     _ballX += _ballDx;
     _ballY += _ballDy;
 }
@@ -74,14 +75,14 @@ int BallMover::ReverseDy()
     return _ballDy;
 }
 
-MatrixSnapshot *BallMover::GetSnapshot()
+MatrixSnapshot* BallMover::GetSnapshot()
 {
     auto index = _matrixHelper->GetMatrixIndex(_ballX, _ballY);
     for (size_t i = 0; i < _snapshot.totalCells; i++)
     {
         _snapshot.cells[i] = 0;
     }
-    
+
     _snapshot.cells[index] = 1;
     return &_snapshot;
 }
