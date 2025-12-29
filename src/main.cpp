@@ -1,3 +1,4 @@
+#include "effects/fireworkeffect.h"
 #include "effects/snake.h"
 #ifdef ARDUINO
 #include "loggers/seriallogger.h"
@@ -77,12 +78,15 @@ RandomProvider _randomProvider;
 // BallMover _ballMover(&_matrixHelper, Width, Height);
 Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
 FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
+FireworkEffect _fireworkEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
 // Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
 // Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
 // MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
 // MazeBuilder mazeBuilder(&_randomProvider, logger, 5, 5);
 // MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
-BaseEffectRunner *_currentEffect = nullptr;
+const int _effectCount = 3;
+BaseEffectRunner* _effects[_effectCount];
+BaseEffectRunner* _currentEffect = nullptr;
 int _currentEffectNr = 0;
 
 // void FillMatrix(MatrixSnapshot *snapshot);
@@ -92,7 +96,8 @@ void ShowMatrix(MatrixSnapshot *snapshot);
 
 int main() {
 
-    _currentEffect = &_finalCountdownEffect;
+    // _currentEffect = &_fireworkEffect;
+    // _currentEffect = &_finalCountdownEffect;
     // _currentEffect = &_scanner;
     // _currentEffect = &_snake;
     // char buffer[128];
@@ -102,22 +107,66 @@ int main() {
     // sprintf(buffer, "After:  %lu", _dateTimeProvider.millis());
     // _logger->Info(buffer);
 
-    for (size_t i = 0; i < 100 && !_currentEffect->IsFinished(); i++)
+    _effects[0] = &_scanner;
+    _effects[1] = &_finalCountdownEffect;
+    _effects[2] = &_fireworkEffect;
+
+    _currentEffectNr = 0;
+    _currentEffect = _effects[_currentEffectNr];
+
+    // for (size_t i = 0; i < 100 && !_currentEffect->IsFinished(); i++)
+    for (size_t i = 0; i < 1000; i++)
     {
         ClearScreen();
         auto snapshot = _currentEffect->GetSnapshot();
         ShowMatrix(snapshot);
 
-        if (_currentEffect->IsFinished()) {
-            return 0;
+        if (_currentEffect->IsFinished())
+        {
+            _currentEffectNr = (_currentEffectNr + 1) % _effectCount;
+            _currentEffect = _effects[_currentEffectNr];
         }
 
         _currentEffect->Move();
         Delay(100);
     }
 
+    // MatrixSnapshot snapshot;
+    // snapshot.totalCells = 100;
+    // snapshot.cells = new uint8_t[snapshot.totalCells];
+    // for (size_t i = 0; i < snapshot.totalCells; i++)
+    // {
+    //     snapshot.cells[i] = ACOLOR_OFF;
+    // }
+    // snapshot.cells[_matrixHelper.GetMatrixIndex(0, 0)] = ACOLOR_RED;
+    // snapshot.cells[_matrixHelper.GetMatrixIndex(1, 1)] = ACOLOR_RED;
+    // snapshot.cells[_matrixHelper.GetMatrixIndex(2, 2)] = ACOLOR_RED;
+    // snapshot.cells[_matrixHelper.GetMatrixIndex(3, 3)] = ACOLOR_RED;
+    // snapshot.cells[_matrixHelper.GetMatrixIndex(4, 4)] = ACOLOR_RED;
+    // ShowMatrix(&snapshot);
 
     return 0;
+}
+
+char GetColorSymbol(unsigned char color)
+{
+    switch (color)
+    {
+    case ACOLOR_RED:
+        return 'R';
+    case ACOLOR_GREEN:
+        return 'G';
+    case ACOLOR_BLUE:
+        return 'B';
+    case ACOLOR_YELLOW:
+        return 'Y';
+    case ACOLOR_WHITE:
+        return 'W';
+    case ACOLOR_ORANGE:
+        return 'O';
+    default:
+        return '#';
+    }
 }
 
 void ShowMatrix(MatrixSnapshot* snapshot)
@@ -133,7 +182,7 @@ void ShowMatrix(MatrixSnapshot* snapshot)
         buf[0] = '|';
         for (int x = 0; x < Width; x++)
         {
-            buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? '.' : '#';
+            buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? '.' : GetColorSymbol(snapshot->cells[index]);
             index++;
         }
         buf[Width + 1] = '|';

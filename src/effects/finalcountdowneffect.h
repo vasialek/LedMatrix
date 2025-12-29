@@ -40,7 +40,7 @@ public:
         }
 
         auto now = _dateTimeProvider->millis();
-        if (now - _lastNumberChangedAt < 1000)
+        if (_lastNumberChangedAt > 0 && now - _lastNumberChangedAt < 1000)
         {
             return;
         }
