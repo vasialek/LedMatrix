@@ -1,10 +1,10 @@
 #pragma once
 
-#include "acolors.h"
-#include "matrixsnapshot.h"
-#include "matrixhelper.h"
-#include "idatetimeprovider.h"
-#include "irandomprovider.h"
+#include "../models/acolors.h"
+#include "../models/matrixsnapshot.h"
+#include "../matrixhelper.h"
+#include "../interfaces/idatetimeprovider.h"
+#include "../interfaces/irandomprovider.h"
 #include "baseeffectrunner.h"
 
 class Life : public BaseEffectRunner
@@ -13,37 +13,37 @@ private:
     int _initialCells = 15;
     char _cells[100];
     int _turn = 0;
-    IDateTimeProvider *_dateTimeProvider = nullptr;
-    IRandomProvider *_randomProvider = nullptr;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
+    IRandomProvider* _randomProvider = nullptr;
     MatrixSnapshot _snapshot;
-    MatrixHelper *_matrixHelper = nullptr;
+    MatrixHelper* _matrixHelper = nullptr;
 
     int GetFreeCellIndex();
     int CountNeighbours(int x, int y);
     int CalculateLiveCells();
 
 public:
-    Life(IDateTimeProvider *dateTimeProvider, 
-            IRandomProvider *randomProvider, 
-            MatrixHelper *matrixHelper, 
-            int width, 
-            int height, 
-            int initialCells);
+    Life(IDateTimeProvider* dateTimeProvider,
+         IRandomProvider* randomProvider,
+         MatrixHelper* matrixHelper,
+         int width,
+         int height,
+         int initialCells);
 
-    void Move();
-    void Reset();
-    int SwitchNextColor();
-    MatrixSnapshot *GetSnapshot();
+    void Move() override;
+    void Reset() override;
+    int SwitchNextColor() override;
+    MatrixSnapshot* GetSnapshot() override;
 
     ~Life();
 };
 
-Life::Life(IDateTimeProvider *dateTimeProvider, 
-            IRandomProvider *randomProvider, 
-            MatrixHelper *matrixHelper, 
-            int width, 
-            int height, 
-            int initialCells)
+Life::Life(IDateTimeProvider* dateTimeProvider,
+           IRandomProvider* randomProvider,
+           MatrixHelper* matrixHelper,
+           int width,
+           int height,
+           int initialCells)
 {
     _dateTimeProvider = dateTimeProvider;
     _randomProvider = randomProvider;
@@ -53,13 +53,12 @@ Life::Life(IDateTimeProvider *dateTimeProvider,
 
     _snapshot.totalCells = _width * _height;
     _snapshot.cells = new unsigned char[_width * _height];
-    if (initialCells > 5 && initialCells < 99) 
+    if (initialCells > 5 && initialCells < 99)
     {
         _initialCells = initialCells;
     }
 
-    Reset();    
-
+    Reset();
 }
 
 inline void Life::Move()
@@ -85,18 +84,18 @@ inline void Life::Move()
             case 3:
                 if (_cells[index] == 0)
                 {
-                    _cells[index] = 3;  // new
+                    _cells[index] = 3; // new
                     updatedCells++;
                 }
             // let survive
             case 2:
-            // case 4: 
+                // case 4:
                 break;
-            
+
             default:
                 if (_cells[index] == 1)
                 {
-                    _cells[index] = 2;  // dying
+                    _cells[index] = 2; // dying
                     updatedCells++;
                 }
                 break;
@@ -107,25 +106,24 @@ inline void Life::Move()
     if (updatedCells < 2)
     {
         _currentColor = SwitchNextColor();
-       Reset();
-       _isFinished = true;
-       return;
+        Reset();
+        _isFinished = true;
+        return;
     }
-    
+
     int liveCells = CalculateLiveCells();
-    
-    
+
     _turn++;
 
     if (liveCells < 1)
     {
-       _currentColor = SwitchNextColor();
-       Reset();
-       _isFinished = true;
+        _currentColor = SwitchNextColor();
+        Reset();
+        _isFinished = true;
     }
 }
 
-void Life::Reset()
+inline void Life::Reset()
 {
     _turn = 0;
     for (int i = 0; i < _snapshot.totalCells; i++)
@@ -138,7 +136,7 @@ void Life::Reset()
     {
         auto index = GetFreeCellIndex();
         _cells[index] = 1;
-    }    
+    }
 }
 
 inline int Life::SwitchNextColor()
@@ -152,7 +150,7 @@ inline int Life::SwitchNextColor()
     return _currentColor;
 }
 
-inline MatrixSnapshot *Life::GetSnapshot()
+inline MatrixSnapshot* Life::GetSnapshot()
 {
     for (auto index = 0; index < _snapshot.totalCells; index++)
     {
@@ -173,7 +171,7 @@ inline int Life::GetFreeCellIndex()
             return index;
         }
     }
-    
+
     return index;
 }
 
@@ -200,11 +198,11 @@ inline int Life::CountNeighbours(int x, int y)
             }
         }
     }
-    
+
     return neighbours;
 }
 
-int Life::CalculateLiveCells()
+inline int Life::CalculateLiveCells()
 {
     int liveCells = 0;
     for (auto index = 0; index < _snapshot.totalCells; index++)
@@ -212,7 +210,8 @@ int Life::CalculateLiveCells()
         if (_cells[index] == 2)
         {
             _cells[index] = 0;
-        } else if (_cells[index] == 3)
+        }
+        else if (_cells[index] == 3)
         {
             _cells[index] = 1;
         }
@@ -225,11 +224,10 @@ int Life::CalculateLiveCells()
     return liveCells;
 }
 
-Life::~Life()
+inline Life::~Life()
 {
     if (_snapshot.cells != nullptr)
     {
         delete []_snapshot.cells;
     }
 }
-

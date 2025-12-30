@@ -1,49 +1,35 @@
 #include "effects/fireworkeffect.h"
+#include "effects/life.h"
 #include "effects/snake.h"
-#ifdef ARDUINO
-#include "loggers/seriallogger.h"
-#else
-#include "loggers/consolelogger.h"
-#endif
-
 #include "interfaces/ilogger.h"
-#include "datetimeprovider.h"
-
-// ILogger *logger;
-DateTimeProvider _dateTimeProvider;
-
-#ifdef ARDUINO
-    ILogger *logger = new SerialLogger(&_dateTimeProvider);
-#else
-    ILogger *_logger = new ConsoleLogger();
-#endif
-
-#include "interfaces/ilogger.h"
-#ifdef ARDUINO
-    #include <Arduino.h>
-    #include "loggers/seriallogger.h"
-    #include <FastLED.h>
-#else
-    #include <cstdlib>
-    #include <unistd.h>
-    #include "loggers/consolelogger.h"
-#endif
-#include "interfaces/ilogger.h"
-// #include "ilogger.h"
-// #include "seriallogger.h"
-// #include "loggers/consolelogger.h"
 #include "models/acolors.h"
 #include "effects/baseeffectrunner.h"
-// #include "mazegenerator.h"
 #include "effects/scanner.h"
 #include "effects/finalcountdowneffect.h"
-#include "ballmover.h"
-// #include "life.h"
-// #include "snake.h"
 #include "datetimeprovider.h"
 #include "providers/randomprovider.h"
 
-void ClearScreen() {
+#ifdef ARDUINO
+#include <Arduino.h>
+#include "loggers/seriallogger.h"
+#include <FastLED.h>
+#include "loggers/seriallogger.h"
+#else
+#include <cstdlib>
+#include <unistd.h>
+#include "loggers/consolelogger.h"
+#endif
+
+DateTimeProvider _dateTimeProvider;
+
+#ifdef ARDUINO
+ILogger* logger = new SerialLogger(&_dateTimeProvider);
+#else
+ILogger* _logger = new ConsoleLogger();
+#endif
+
+void ClearScreen()
+{
 #ifdef ARDUINO
 #elif defined(WINDOWS)
     std::system("cls");
@@ -51,7 +37,9 @@ void ClearScreen() {
     std::system("clear");
 #endif
 }
-void Delay(int ms) {
+
+void Delay(int ms)
+{
 #ifdef ARDUINO
     delay(ms * 1000);
 #else
@@ -79,12 +67,12 @@ RandomProvider _randomProvider;
 Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
 FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
 FireworkEffect _fireworkEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
-// Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
-// Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
+Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
+Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
 // MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
 // MazeBuilder mazeBuilder(&_randomProvider, logger, 5, 5);
 // MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
-const int _effectCount = 3;
+const int _effectCount = 5;
 BaseEffectRunner* _effects[_effectCount];
 BaseEffectRunner* _currentEffect = nullptr;
 int _currentEffectNr = 0;
@@ -92,29 +80,20 @@ int _currentEffectNr = 0;
 // void FillMatrix(MatrixSnapshot *snapshot);
 // CRGB MapColorToCrgb(unsigned char color);
 // BaseEffectRunner *SwicthNextEffect();
-void ShowMatrix(MatrixSnapshot *snapshot);
+void ShowMatrix(MatrixSnapshot* snapshot);
 
-int main() {
-
-    // _currentEffect = &_fireworkEffect;
-    // _currentEffect = &_finalCountdownEffect;
-    // _currentEffect = &_scanner;
-    // _currentEffect = &_snake;
-    // char buffer[128];
-    // sprintf(buffer, "Before: %lu", _dateTimeProvider.millis());
-    // _logger->Info(buffer);
-    // Delay(2000);
-    // sprintf(buffer, "After:  %lu", _dateTimeProvider.millis());
-    // _logger->Info(buffer);
-
+int main()
+{
     _effects[0] = &_scanner;
     _effects[1] = &_finalCountdownEffect;
     _effects[2] = &_fireworkEffect;
+    _effects[3] = &_snake;
+    _effects[4] = &_life;
 
     _currentEffectNr = 0;
     _currentEffect = _effects[_currentEffectNr];
 
-    // for (size_t i = 0; i < 100 && !_currentEffect->IsFinished(); i++)
+    char buffer[128];
     for (size_t i = 0; i < 1000; i++)
     {
         ClearScreen();
@@ -123,7 +102,17 @@ int main() {
 
         if (_currentEffect->IsFinished())
         {
-            _currentEffectNr = (_currentEffectNr + 1) % _effectCount;
+            _currentEffect->Reset();
+            _currentEffectNr++;
+            if (_currentEffectNr >= _effectCount)
+            {
+                _currentEffectNr = 0;
+            }
+
+            sprintf(buffer, "Current effect #%d", _currentEffectNr);
+            _logger->Info(buffer);
+            Delay(2000);
+            // _currentEffectNr = (_currentEffectNr + 1) % _effectCount;
             _currentEffect = _effects[_currentEffectNr];
         }
 
@@ -191,13 +180,11 @@ void ShowMatrix(MatrixSnapshot* snapshot)
     }
 }
 
-
 // void setup()
 // {
 //     Serial.begin(9600);
 //     pinMode(LED_BUILTIN, OUTPUT);
 // FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
-
 
 //     for (size_t i = 0; i < 5; i++)
 //     {
@@ -206,7 +193,6 @@ void ShowMatrix(MatrixSnapshot* snapshot)
 //         digitalWrite(LED_BUILTIN, LOW);
 //         delay(500);
 //     }
-
 
 //     FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
 //     FastLED.setBrightness(100);

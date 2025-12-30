@@ -37,3 +37,4 @@
 .vscode/launch.json
 .vscode/ipch
 .idea/*
+/src/main

@@ -69,6 +69,7 @@ public:
             break;
         case 5:
             SetStarburstPixels(_fireworkX, _fireworkY, 3, ACOLOR_OFF);
+            _isFinished = true;
             break;
         default:
             Reset();
