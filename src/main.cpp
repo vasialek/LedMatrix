@@ -26,7 +26,7 @@ const int Height = 10;
 DateTimeProvider _dateTimeProvider;
 
 #ifdef ARDUINO
-ILogger* logger = new SerialLogger(&_dateTimeProvider);
+ILogger* _logger = new SerialLogger(&_dateTimeProvider);
 
 #define NUM_LEDS 100
 CRGB leds[NUM_LEDS];
@@ -75,6 +75,8 @@ CRGB MapColorToCrgb(unsigned char color);
 void setup()
 {
     Serial.begin(9600);
+    Serial.println("Setup");
+    // _logger->Debug("Setup...");
     pinMode(LED_BUILTIN, OUTPUT);
     FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
 
@@ -90,23 +92,26 @@ void setup()
     FastLED.setBrightness(50);
     // FastLED.setBrightness(100);
 
+    _logger->Debug("Initializing effects...");
     InitializeEffects();
 }
 
 void loop()
 {
+    _logger->Debug("Looping...");
     FastLED.clear();
 
     auto snapshot = _currentEffect->GetSnapshot();
     FillMatrix(snapshot);
 
+    _logger->Debug("Showing FastLED");
     FastLED.show();
 
     if (_currentEffect->IsFinished())
     {
         _currentEffect->Reset();
         _currentEffectNr++;
-        if (_currentEffectNr >= _effectCount)
+        if (_currentEffectNr >= _effectsCount)
         {
             _currentEffectNr = 0;
         }

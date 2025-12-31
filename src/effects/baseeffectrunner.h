@@ -7,8 +7,8 @@
 class BaseEffectRunner : public IEffectRunner
 {
 protected:
-    int _width = 10, _height = 10;
-    int _delayMs = 1;
+    unsigned int _width = 10, _height = 10;
+    unsigned int _delayMs = 1;
     unsigned long _lastMoveAt = 0;
     int _currentColor = ACOLOR_MIN;
     bool _isFinished = true;

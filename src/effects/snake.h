@@ -60,7 +60,7 @@ Snake::Snake(IDateTimeProvider* dateTimeProvider,
     Reset();
 }
 
-void Snake::Move()
+inline void Snake::Move()
 {
     _isFinished = false;
     bool debug = false;
@@ -71,8 +71,8 @@ void Snake::Move()
     }
     _lastMoveAt = now;
 
-    auto x = _positionX[0] + _dx;
-    auto y = _positionY[0];
+    unsigned char x = _positionX[0] + _dx;
+    unsigned char y = _positionY[0];
     if (x < 0)
     {
         x = 0;
@@ -171,8 +171,8 @@ inline bool Snake::SnakeHitTarget()
 
 inline void Snake::SetNewTarget(int y)
 {
-    auto targetX = _randomProvider->Random(10);
-    auto targetY = y + _dy;
+    unsigned char targetX = _randomProvider->Random(10);
+    unsigned char targetY = y + _dy;
     if (targetY < 0)
     {
         targetY = _length > 6 ? 2 : 1;

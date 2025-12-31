@@ -9,9 +9,9 @@
 class Scanner : public BaseEffectRunner
 {
 private:
-    int _positions[10];
-    int _dYs[10];
-    int _turns = 0;
+    unsigned int _positions[10];
+    unsigned int _dYs[10];
+    unsigned int _turns = 0;
 
     IDateTimeProvider* _dateTimeProvider = nullptr;
     MatrixSnapshot _snapshot;
@@ -50,7 +50,7 @@ void Scanner::Move()
     _lastMoveAt = now;
 
     _isFinished = false;
-    for (size_t x = 0; x < _width; x++)
+    for (unsigned char x = 0; x < _width; x++)
     {
         if (_positions[x] + _dYs[x] >= _height)
         {
@@ -83,12 +83,12 @@ void Scanner::Reset()
         _snapshot.cells[i] = 0;
     }
 
-    for (int x = 0; x < _width; x += 2)
+    for (unsigned char x = 0; x < _width; x += 2)
     {
         _positions[x] = 0;
         _dYs[x] = 1;
     }
-    for (int x = 1; x < _width; x += 2)
+    for (unsigned char x = 1; x < _width; x += 2)
     {
         _positions[x] = 9;
         _dYs[x] = -1;
@@ -102,7 +102,7 @@ MatrixSnapshot* Scanner::GetSnapshot()
         _snapshot.cells[i] = ACOLOR_OFF;
     }
 
-    for (int x = 0; x < _width; x++)
+    for (unsigned int x = 0; x < _width; x++)
     {
         auto index = _matrixHelper->GetMatrixIndex(x, _positions[x]);
         _snapshot.cells[index] = _currentColor;

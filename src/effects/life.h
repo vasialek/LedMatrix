@@ -72,9 +72,9 @@ inline void Life::Move()
 
     auto updatedCells = 0;
     _isFinished = false;
-    for (auto x = 0; x < _width; x++)
+    for (unsigned char x = 0; x < _width; x++)
     {
-        for (auto y = 0; y < _height; y++)
+        for (unsigned char y = 0; y < _height; y++)
         {
             auto index = _matrixHelper->GetMatrixIndex(x, y);
             auto neighbours = CountNeighbours(x, y);
