@@ -27,12 +27,15 @@ public:
         _snapshot.totalCells = width * height;
         _snapshot.cells = new uint8_t[_snapshot.totalCells];
         _delayMs = 5000;
+        Serial.println("FinalCountdownEffect created");
         Reset();
+        Serial.println("FinalCountdownEffect reset");
         DrawDigit(_currentNumber);
     }
 
     void Move() override
     {
+        Serial.println("FinalCountdownEffect Move");
         // char buffer[128];
         if (_isFinished)
         {
@@ -73,10 +76,9 @@ public:
     {
         FillMatrix(ACOLOR_OFF);
         const bool* pattern = DigitPatternHelper::GetDigit(currentNumber);
-        int digitPatterLength = DigitPatternHelper::GetLength();
         for (int i = 0; i < _snapshot.totalCells; i++)
         {
-            if (i < digitPatterLength && pattern[i])
+            if (i < _snapshot.totalCells && pattern[i])
             {
                 // snprintf(buffer, sizeof(buffer), "Set [%d] to RED", i);
                 // _logger->Debug(buffer);

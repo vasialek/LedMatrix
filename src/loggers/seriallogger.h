@@ -10,6 +10,7 @@ class SerialLogger : public ILogger
 private:
     IDateTimeProvider* _dateTimeProvider = nullptr;
     char _timeBuffer[10];
+    char _logBuffer[128];
     char* GetTime();
     void Log(const char* logLevel, const char* msg);
 
@@ -27,9 +28,9 @@ SerialLogger::SerialLogger(IDateTimeProvider* dateTimeProvider)
 
 void SerialLogger::Log(const char* logLevel, const char* msg)
 {
-    // temporary, then use Serial.println()
-    Serial.print(GetTime());
-    // << " [" << logLevel << "] " << msg << std::endl;
+    snprintf(_logBuffer, sizeof(_logBuffer), "%s [%s] %s", GetTime(), logLevel, msg);
+    // Serial.println("log");
+    Serial.println(_logBuffer);
 }
 
 void SerialLogger::Info(const char* msg)

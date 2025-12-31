@@ -42,29 +42,27 @@ ILogger* _logger = new ConsoleLogger();
 void Delay(int ms)
 {
 #ifdef ARDUINO
-    delay(ms * 1000);
+    delay(ms);
 #else
     usleep(ms * 1000);
 #endif
 }
 
-// BallMover _ballMover(&_matrixHelper, Width, Height);
 MatrixHelper _matrixHelper;
 RandomProvider _randomProvider;
 Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
-FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
+// FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
 FireworkEffect _fireworkEffect(&_dateTimeProvider, &_matrixHelper, &_randomProvider, _logger, Width, Height);
 Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
 Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
 
-char _logBuffer[256];
+// char _logBuffer[256];
 
 int _effectsCount = -1;
 int _currentEffectNr = 0;
 BaseEffectRunner** _effects = nullptr;
 BaseEffectRunner* _currentEffect = nullptr;
 
-// BaseEffectRunner *SwicthNextEffect();
 void InitializeEffects();
 
 #ifdef ARDUINO
@@ -78,7 +76,7 @@ void setup()
     Serial.println("Setup");
     // _logger->Debug("Setup...");
     pinMode(LED_BUILTIN, OUTPUT);
-    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+    // FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
 
     for (size_t i = 0; i < 5; i++)
     {
@@ -92,8 +90,11 @@ void setup()
     FastLED.setBrightness(50);
     // FastLED.setBrightness(100);
 
-    _logger->Debug("Initializing effects...");
+    
+    // _logger->Debug("Initializing effects...");
     InitializeEffects();
+    Delay(2000);
+    Serial.println("Setup done");
 }
 
 void loop()
@@ -254,10 +255,10 @@ void ClearScreen()
 void InitializeEffects()
 {
     static BaseEffectRunner* registry[] = {
-        &_scanner,
-        &_finalCountdownEffect,
+        // &_scanner,
+        // &_finalCountdownEffect,
         &_fireworkEffect,
-        &_snake,
+        // &_snake,
         // &_life
     };
 
@@ -270,7 +271,7 @@ void InitializeEffects()
     {
         _currentEffect->Reset();
     }
-    _logger->Debug(_logBuffer);
+    Serial.println("Effects initialized");
 }
 
 // void setup()
