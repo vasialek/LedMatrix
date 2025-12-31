@@ -20,23 +20,24 @@
 #include "loggers/consolelogger.h"
 #endif
 
+const int Width = 10;
+const int Height = 10;
+
 DateTimeProvider _dateTimeProvider;
 
 #ifdef ARDUINO
 ILogger* logger = new SerialLogger(&_dateTimeProvider);
+
+#define NUM_LEDS 100
+CRGB leds[NUM_LEDS];
+
+// For led chips like Neopixels, which have a data line, ground, and power, you just
+// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
+// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
+#define DATA_PIN 2
 #else
 ILogger* _logger = new ConsoleLogger();
 #endif
-
-void ClearScreen()
-{
-#ifdef ARDUINO
-#elif defined(WINDOWS)
-    std::system("cls");
-#else
-    std::system("clear");
-#endif
-}
 
 void Delay(int ms)
 {
@@ -47,53 +48,120 @@ void Delay(int ms)
 #endif
 }
 
-const int Width = 10;
-const int Height = 10;
-
-// How many leds in your strip?
-#define NUM_LEDS 100
-
-// For led chips like Neopixels, which have a data line, ground, and power, you just
-// need to define DATA_PIN.  For led chipsets that are SPI based (four wires - data, clock,
-// ground, and power), like the LPD8806 define both DATA_PIN and CLOCK_PIN
-#define DATA_PIN 2
-
-// Define the array of leds
-// CRGB leds[NUM_LEDS];
-
+// BallMover _ballMover(&_matrixHelper, Width, Height);
 MatrixHelper _matrixHelper;
 RandomProvider _randomProvider;
-// BallMover _ballMover(&_matrixHelper, Width, Height);
 Scanner _scanner(&_dateTimeProvider, &_matrixHelper, Width, Height);
 FinalCountdownEffect _finalCountdownEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
-FireworkEffect _fireworkEffect(&_dateTimeProvider, &_matrixHelper, _logger, Width, Height);
+FireworkEffect _fireworkEffect(&_dateTimeProvider, &_matrixHelper, &_randomProvider, _logger, Width, Height);
 Life _life(&_dateTimeProvider, &_randomProvider, &_matrixHelper, Width, Height, 60);
 Snake _snake(&_dateTimeProvider, &_randomProvider, &_matrixHelper, 9, 0, -1, 1);
-// MazeBuilder mazeBuilder(&_randomProvider, logger, Width, Height);
-// MazeBuilder mazeBuilder(&_randomProvider, logger, 5, 5);
-// MazeGenerator _mazeGenerator(&mazeBuilder, logger, Width, Height);
-const int _effectCount = 5;
-BaseEffectRunner* _effects[_effectCount];
-BaseEffectRunner* _currentEffect = nullptr;
-int _currentEffectNr = 0;
 
-// void FillMatrix(MatrixSnapshot *snapshot);
-// CRGB MapColorToCrgb(unsigned char color);
+char _logBuffer[256];
+
+int _effectsCount = -1;
+int _currentEffectNr = 0;
+BaseEffectRunner** _effects = nullptr;
+BaseEffectRunner* _currentEffect = nullptr;
+
 // BaseEffectRunner *SwicthNextEffect();
+void InitializeEffects();
+
+#ifdef ARDUINO
+
+void FillMatrix(MatrixSnapshot* snapshot);
+CRGB MapColorToCrgb(unsigned char color);
+
+void setup()
+{
+    Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
+
+    for (size_t i = 0; i < 5; i++)
+    {
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(500);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(500);
+    }
+
+    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+    FastLED.setBrightness(50);
+    // FastLED.setBrightness(100);
+
+    InitializeEffects();
+}
+
+void loop()
+{
+    FastLED.clear();
+
+    auto snapshot = _currentEffect->GetSnapshot();
+    FillMatrix(snapshot);
+
+    FastLED.show();
+
+    if (_currentEffect->IsFinished())
+    {
+        _currentEffect->Reset();
+        _currentEffectNr++;
+        if (_currentEffectNr >= _effectCount)
+        {
+            _currentEffectNr = 0;
+        }
+        _currentEffect = _effects[_currentEffectNr];
+    }
+
+    _currentEffect->Move();
+    Delay(50);
+}
+
+void FillMatrix(MatrixSnapshot* snapshot)
+{
+    for (int i = 0; i < snapshot->totalCells; i++)
+    {
+        leds[i] = MapColorToCrgb(snapshot->cells[i]);
+    }
+}
+
+CRGB MapColorToCrgb(unsigned char color)
+{
+    switch (color)
+    {
+    case ACOLOR_OFF:
+        return CRGB::Black;
+    case ACOLOR_BLUE:
+        return CRGB::Blue;
+    case ACOLOR_YELLOW:
+        return CRGB::Yellow;
+    case ACOLOR_RED:
+        return CRGB::Red;
+    case ACOLOR_CYAN:
+        return CRGB::Cyan;
+    case ACOLOR_PURPLE:
+        return CRGB::Purple;
+    case ACOLOR_ORANGE:
+        return CRGB::Orange;
+    case ACOLOR_PINK:
+        return CRGB::DeepPink;
+    case ACOLOR_WHITE:
+        return CRGB::White;
+    default:
+        return CRGB::Green;
+    }
+}
+
+#endif
+
+#ifndef ARDUINO
+void ClearScreen();
 void ShowMatrix(MatrixSnapshot* snapshot);
 
 int main()
 {
-    _effects[0] = &_scanner;
-    _effects[1] = &_finalCountdownEffect;
-    _effects[2] = &_fireworkEffect;
-    _effects[3] = &_snake;
-    _effects[4] = &_life;
+    InitializeEffects();
 
-    _currentEffectNr = 0;
-    _currentEffect = _effects[_currentEffectNr];
-
-    char buffer[128];
     for (size_t i = 0; i < 1000; i++)
     {
         ClearScreen();
@@ -104,14 +172,14 @@ int main()
         {
             _currentEffect->Reset();
             _currentEffectNr++;
-            if (_currentEffectNr >= _effectCount)
+            if (_currentEffectNr >= _effectsCount)
             {
                 _currentEffectNr = 0;
             }
 
-            sprintf(buffer, "Current effect #%d", _currentEffectNr);
-            _logger->Info(buffer);
-            Delay(2000);
+            // sprintf(buffer, "Current effect #%d", _currentEffectNr);
+            // _logger->Info(buffer);
+            // Delay(2000);
             // _currentEffectNr = (_currentEffectNr + 1) % _effectCount;
             _currentEffect = _effects[_currentEffectNr];
         }
@@ -119,20 +187,6 @@ int main()
         _currentEffect->Move();
         Delay(100);
     }
-
-    // MatrixSnapshot snapshot;
-    // snapshot.totalCells = 100;
-    // snapshot.cells = new uint8_t[snapshot.totalCells];
-    // for (size_t i = 0; i < snapshot.totalCells; i++)
-    // {
-    //     snapshot.cells[i] = ACOLOR_OFF;
-    // }
-    // snapshot.cells[_matrixHelper.GetMatrixIndex(0, 0)] = ACOLOR_RED;
-    // snapshot.cells[_matrixHelper.GetMatrixIndex(1, 1)] = ACOLOR_RED;
-    // snapshot.cells[_matrixHelper.GetMatrixIndex(2, 2)] = ACOLOR_RED;
-    // snapshot.cells[_matrixHelper.GetMatrixIndex(3, 3)] = ACOLOR_RED;
-    // snapshot.cells[_matrixHelper.GetMatrixIndex(4, 4)] = ACOLOR_RED;
-    // ShowMatrix(&snapshot);
 
     return 0;
 }
@@ -166,13 +220,14 @@ void ShowMatrix(MatrixSnapshot* snapshot)
     }
     char buf[Width + 3];
     int index = 0;
-    for (int i = 0; i < Height; i++)
+    for (int y = 0; y < Height; y++)
     {
         buf[0] = '|';
         for (int x = 0; x < Width; x++)
         {
+            index = _matrixHelper.GetMatrixIndex(x, y);
             buf[x + 1] = snapshot->cells[index] == ACOLOR_OFF ? '.' : GetColorSymbol(snapshot->cells[index]);
-            index++;
+            // index++;
         }
         buf[Width + 1] = '|';
         buf[Width + 2] = 0;
@@ -180,12 +235,44 @@ void ShowMatrix(MatrixSnapshot* snapshot)
     }
 }
 
+void ClearScreen()
+{
+#ifdef WINDOWS
+    std::system("cls");
+#else
+    std::system("clear");
+#endif
+}
+
+#endif
+
+void InitializeEffects()
+{
+    static BaseEffectRunner* registry[] = {
+        &_scanner,
+        &_finalCountdownEffect,
+        &_fireworkEffect,
+        &_snake,
+        // &_life
+    };
+
+    _effects = registry;
+    _effectsCount = sizeof(registry) / sizeof(registry[0]);
+    _currentEffectNr = 0;
+    _currentEffect = _effects[_currentEffectNr];
+
+    if (_currentEffect)
+    {
+        _currentEffect->Reset();
+    }
+    _logger->Debug(_logBuffer);
+}
+
 // void setup()
 // {
 //     Serial.begin(9600);
 //     pinMode(LED_BUILTIN, OUTPUT);
 // FastLED.setMaxPowerInVoltsAndMilliamps(5, 1000);
-
 //     for (size_t i = 0; i < 5; i++)
 //     {
 //         digitalWrite(LED_BUILTIN, HIGH);
@@ -193,17 +280,13 @@ void ShowMatrix(MatrixSnapshot* snapshot)
 //         digitalWrite(LED_BUILTIN, LOW);
 //         delay(500);
 //     }
-
 //     FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
 //     FastLED.setBrightness(100);
 //     // _ballMover.SetBall(0, 2);
-
 //     _scanner.SetDelayMs(150);
 //     _snake.SetDelayMs(180);
 //     _life.SetDelayMs(1500);
-
 //     _currentEffect = SwicthNextEffect();
-
 //     // Seed random
 //     randomSeed(analogRead(0));
 // }
@@ -248,41 +331,6 @@ void ShowMatrix(MatrixSnapshot* snapshot)
 //     // }
 
 //     delay(50);
-// }
-
-// void FillMatrix(MatrixSnapshot *snapshot)
-// {
-//     for (int i = 0; i < snapshot->totalCells; i++)
-//     {
-//         leds[i] = MapColorToCrgb(snapshot->cells[i]);
-//     }
-// }
-
-// CRGB MapColorToCrgb(unsigned char color)
-// {
-//     switch (color)
-//     {
-//     case ACOLOR_OFF:
-//         return CRGB::Black;
-//     case ACOLOR_BLUE:
-//         return CRGB::Blue;
-//     case ACOLOR_YELLOW:
-//         return CRGB::Yellow;
-//     case ACOLOR_RED:
-//         return CRGB::Red;
-//     case ACOLOR_CYAN:
-//         return CRGB::Cyan;
-//     case ACOLOR_PURPLE:
-//         return CRGB::Purple;
-//     case ACOLOR_ORANGE:
-//         return CRGB::Orange;
-//     case ACOLOR_PINK:
-//         return CRGB::DeepPink;
-//     case ACOLOR_WHITE:
-//         return CRGB::White;
-//     default:
-//         return CRGB::Green;
-//     }
 // }
 
 // BaseEffectRunner *SwicthNextEffect()

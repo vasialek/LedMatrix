@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 
 #include "baseeffectrunner.h"
 #include "../interfaces/idatetimeprovider.h"
@@ -27,6 +26,7 @@ public:
 
         _snapshot.totalCells = width * height;
         _snapshot.cells = new uint8_t[_snapshot.totalCells];
+        _delayMs = 5000;
         Reset();
         DrawDigit(_currentNumber);
     }
@@ -40,7 +40,7 @@ public:
         }
 
         auto now = _dateTimeProvider->millis();
-        if (_lastNumberChangedAt > 0 && now - _lastNumberChangedAt < 1000)
+        if (_lastNumberChangedAt > 0 && now - _lastNumberChangedAt < _delayMs)
         {
             return;
         }

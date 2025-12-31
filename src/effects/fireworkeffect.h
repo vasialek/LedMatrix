@@ -1,12 +1,15 @@
 #pragma once
 
-#include <cstdint>
-#include <cstdio>
-
+#ifdef ARDUINO
+    #include <Arduino.h>
+#else
+    #include <cstdio> // Keep for PC/Linux only
+#endif
 #include "baseeffectrunner.h"
 #include "../matrixhelper.h"
 #include "../interfaces/idatetimeprovider.h"
 #include "../interfaces/ilogger.h"
+#include "../interfaces/irandomprovider.h"
 #include "../models/acolors.h"
 
 class FireworkEffect : public BaseEffectRunner
@@ -14,30 +17,34 @@ class FireworkEffect : public BaseEffectRunner
     MatrixSnapshot _snapshot;
     IDateTimeProvider* _dateTimeProvider;
     MatrixHelper* _matrixHelper;
+    IRandomProvider* _randomProvider;
     ILogger* _logger;
     unsigned long _lastTickAt = 0;
-    unsigned long _tickDelay = 2000;
     int _fireworkPhase = 0;
     int _fireworkX, _fireworkY, _fireworkSize = 4;
-    void SetPixelSafe(int x, int y, uint8_t color);
-    void SetStarburstPixels(int x, int y, int distance, uint8_t color);
+    int _totalFireworks = 0;
+    void SetPixelSafe(int x, int y, unsigned char color);
+    void SetStarburstPixels(int x, int y, int distance, unsigned char color);
 
 public:
-    FireworkEffect(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, ILogger* logger, int width, int height)
+    FireworkEffect(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, IRandomProvider* randomProvider, ILogger* logger, int width, int height)
     {
         _dateTimeProvider = dateTimeProvider;
         _matrixHelper = matrixHelper;
+        _randomProvider = randomProvider;
         _logger = logger;
 
         _snapshot.totalCells = width * height;
-        _snapshot.cells = new uint8_t[_snapshot.totalCells];
+        _snapshot.cells = new unsigned char[_snapshot.totalCells];
+        _delayMs = 500;
         Reset();
     }
 
     void Move() override
     {
+        int dx, dy;
         auto now = _dateTimeProvider->millis();
-        if (now - _lastTickAt < _tickDelay)
+        if (now - _lastTickAt < _delayMs)
         {
             return;
         }
@@ -49,8 +56,10 @@ public:
         switch (_fireworkPhase)
         {
         case 0:
-            _fireworkX = 5;
-            _fireworkY = 5;
+            dx = _randomProvider->Random(4) - 2;
+            dy = _randomProvider->Random(5) - 1;
+            _fireworkX = 5 + dx;
+            _fireworkY = 5 + dy;
             SetStarburstPixels(_fireworkX, _fireworkY, 0, ACOLOR_BLUE);
             break;
         case 1:
@@ -100,7 +109,7 @@ public:
     }
 };
 
-void FireworkEffect::SetPixelSafe(int x, int y, uint8_t color)
+void FireworkEffect::SetPixelSafe(int x, int y, unsigned char color)
 {
     auto index = _matrixHelper->GetMatrixIndex(x, y);
     if (index < 0 || index >= _snapshot.totalCells)
@@ -110,7 +119,7 @@ void FireworkEffect::SetPixelSafe(int x, int y, uint8_t color)
     _snapshot.cells[index] = color;
 }
 
-inline void FireworkEffect::SetStarburstPixels(int x, int y, int distance, uint8_t color)
+inline void FireworkEffect::SetStarburstPixels(int x, int y, int distance, unsigned char color)
 {
     if (distance == 0)
     {
