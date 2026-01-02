@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../models/acolors.h"
-#include "../datetimeprovider.h"
-#include "../matrixhelper.h"
+#include "../providers/datetimeprovider.h"
+#include "../helpers/matrixhelper.h"
 #include "../providers/randomprovider.h"
 #include "../effects/baseeffectrunner.h"
 
@@ -10,7 +10,6 @@ const int MaxLength = 25;
 
 class Snake : public BaseEffectRunner
 {
-private:
     int _length = 1;
     int _positionX[MaxLength];
     int _positionY[MaxLength];
@@ -118,6 +117,7 @@ inline void Snake::Move()
         if (_length >= MaxLength)
         {
             Reset();
+            _isFinished = true;
             return;
         }
         SetNewTarget(y);

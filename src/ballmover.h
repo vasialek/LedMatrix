@@ -7,7 +7,6 @@
 
 class BallMover
 {
-private:
     int _width = 10, _height = 10;
     int _ballX = 0, _ballY = 0;
     int _ballDx = 1, _ballDy = 1;

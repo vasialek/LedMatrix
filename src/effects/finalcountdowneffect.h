@@ -8,10 +8,10 @@
 class FinalCountdownEffect : public BaseEffectRunner
 {
     MatrixSnapshot _snapshot;
-    IDateTimeProvider* _dateTimeProvider;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
     MatrixHelper* _matrixHelper = nullptr;
     ILogger* _logger = nullptr;
-    int _currentNumber, _width, _height;
+    int _currentNumber;
     int _currentNumberColor;
     unsigned long _lastNumberChangedAt;
 
@@ -24,18 +24,17 @@ public:
         _width = width;
         _height = height;
 
+        _lastNumberChangedAt = 0;
         _snapshot.totalCells = width * height;
-        _snapshot.cells = new uint8_t[_snapshot.totalCells];
-        _delayMs = 5000;
-        Serial.println("FinalCountdownEffect created");
+        _snapshot.cells = new unsigned char[_snapshot.totalCells];
+        _delayMs = 2000;
         Reset();
-        Serial.println("FinalCountdownEffect reset");
         DrawDigit(_currentNumber);
     }
 
     void Move() override
     {
-        Serial.println("FinalCountdownEffect Move");
+        // Serial.println("FinalCountdownEffect Move");
         // char buffer[128];
         if (_isFinished)
         {
@@ -55,6 +54,10 @@ public:
             return;
         }
 
+        for (int i = 0; i < _snapshot.totalCells; i++)
+        {
+            _snapshot.cells[i] = ACOLOR_OFF;
+        }
         DrawDigit(_currentNumber);
         _currentNumber--;
     }
@@ -63,6 +66,7 @@ public:
     {
         _isFinished = false;
         _currentNumber = 5;
+        // _currentNumber = 3;
         _currentNumberColor = ACOLOR_RED;
         _lastNumberChangedAt = _dateTimeProvider->millis();
     }
@@ -74,20 +78,192 @@ public:
 
     void DrawDigit(int currentNumber)
     {
-        FillMatrix(ACOLOR_OFF);
-        const bool* pattern = DigitPatternHelper::GetDigit(currentNumber);
-        for (int i = 0; i < _snapshot.totalCells; i++)
+        // FillMatrix(ACOLOR_OFF);
+        switch (currentNumber)
         {
-            if (i < _snapshot.totalCells && pattern[i])
-            {
-                // snprintf(buffer, sizeof(buffer), "Set [%d] to RED", i);
-                // _logger->Debug(buffer);
-                _snapshot.cells[i] = ACOLOR_RED;
-            }
-            else
-            {
-                _snapshot.cells[i] = ACOLOR_OFF;
-            }
+        case 1:
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 1)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 2)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 3)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 4)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 5)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 6)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 6)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 7)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
+            break;
+        case 2:
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 1)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(8, 2)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 3)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 4)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 5)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 6)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 6)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 7)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(8, 8)] = ACOLOR_RED;
+            break;
+
+        case 3:
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 1)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 2)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 3)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 4)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 5)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 6)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 6)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 7)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
+            break;
+        case 4:
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 1)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 2)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 3)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 4)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 5)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 6)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 6)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 7)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 8)] = ACOLOR_RED;
+            break;
+
+        case 5:
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 1)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 1)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 2)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 2)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 3)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 3)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 4)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 4)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 5)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(8, 5)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 6)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(8, 6)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 7)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(8, 7)] = ACOLOR_RED;
+
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(2, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(3, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(4, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(5, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
+            _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 8)] = ACOLOR_RED;
+            break;
         }
     }
 

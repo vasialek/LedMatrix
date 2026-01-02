@@ -2,6 +2,8 @@
 
 #ifdef ARDUINO
 
+#include "FastLED.h"
+
 class ColorHelper
 {
 public:

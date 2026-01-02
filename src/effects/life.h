@@ -2,14 +2,13 @@
 
 #include "../models/acolors.h"
 #include "../models/matrixsnapshot.h"
-#include "../matrixhelper.h"
+#include "../helpers/matrixhelper.h"
 #include "../interfaces/idatetimeprovider.h"
 #include "../interfaces/irandomprovider.h"
 #include "baseeffectrunner.h"
 
 class Life : public BaseEffectRunner
 {
-private:
     int _initialCells = 15;
     char _cells[100];
     int _turn = 0;

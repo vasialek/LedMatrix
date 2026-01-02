@@ -2,13 +2,12 @@
 
 #include "../models/acolors.h"
 #include "../models/matrixsnapshot.h"
-#include "../matrixhelper.h"
+#include "../helpers/matrixhelper.h"
 #include "../interfaces/idatetimeprovider.h"
 #include "../effects/baseeffectrunner.h"
 
 class Scanner : public BaseEffectRunner
 {
-private:
     unsigned int _positions[10];
     unsigned int _dYs[10];
     unsigned int _turns = 0;
@@ -20,9 +19,9 @@ private:
 public:
     Scanner(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, int width, int height);
 
-    void Move();
-    void Reset();
-    MatrixSnapshot* GetSnapshot();
+    void Move() override;
+    void Reset() override;
+    MatrixSnapshot* GetSnapshot() override;
 
     ~Scanner();
 };
@@ -37,6 +36,7 @@ Scanner::Scanner(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper
     _snapshot.totalCells = _width * _height;
     _snapshot.cells = new unsigned char[_width * _height];
 
+    _delayMs = 170;
     Reset();
 }
 
@@ -58,7 +58,7 @@ void Scanner::Move()
             _dYs[x] = -_dYs[x];
 
             _turns++;
-            if (_turns >= ACOLOR_MAX * _width)
+            if (_turns >= ACOLOR_MAX * _width * 10)
             {
                 _isFinished = true;
                 _turns = 0;
@@ -78,6 +78,7 @@ void Scanner::Reset()
     _lastMoveAt = 0;
     _currentColor = ACOLOR_MIN;
     _turns = 0;
+    _isFinished = false;
     for (int i = 0; i < _snapshot.totalCells; i++)
     {
         _snapshot.cells[i] = 0;

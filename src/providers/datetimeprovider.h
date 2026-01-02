@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interfaces/idatetimeprovider.h"
+#include "../interfaces/idatetimeprovider.h"
 #ifdef ARDUINO
 #include "Arduino.h"
 #else
@@ -10,7 +10,6 @@
 
 class DateTimeProvider : public IDateTimeProvider
 {
-private:
     unsigned long _startedAt = 0;
 
 public:
@@ -22,7 +21,7 @@ public:
     unsigned long millis() override;
 };
 
-unsigned long DateTimeProvider::millis()
+inline unsigned long DateTimeProvider::millis()
 {
 #ifdef ARDUINO
     return ::millis();

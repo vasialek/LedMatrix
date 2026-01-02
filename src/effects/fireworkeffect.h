@@ -1,12 +1,12 @@
 #pragma once
 
 #ifdef ARDUINO
-    #include <Arduino.h>
+#include <Arduino.h>
 #else
-    #include <cstdio> // Keep for PC/Linux only
+#include <cstdio>
 #endif
 #include "baseeffectrunner.h"
-#include "../matrixhelper.h"
+#include "../helpers/matrixhelper.h"
 #include "../interfaces/idatetimeprovider.h"
 #include "../interfaces/ilogger.h"
 #include "../interfaces/irandomprovider.h"
@@ -19,10 +19,12 @@ class FireworkEffect : public BaseEffectRunner
     MatrixHelper* _matrixHelper;
     IRandomProvider* _randomProvider;
     ILogger* _logger;
+
     unsigned long _lastTickAt = 0;
     int _fireworkPhase = 0;
     int _fireworkX, _fireworkY, _fireworkSize = 4;
     int _totalFireworks = 0;
+
     void SetPixelSafe(int x, int y, unsigned char color);
     void SetStarburstPixels(int x, int y, int distance, unsigned char color);
 
@@ -36,7 +38,7 @@ public:
 
         _snapshot.totalCells = width * height;
         _snapshot.cells = new unsigned char[_snapshot.totalCells];
-        _delayMs = 500;
+        _delayMs = 300;
         Reset();
     }
 
@@ -50,38 +52,43 @@ public:
         }
         _lastTickAt = now;
 
-        char buffer[128];
-        sprintf(buffer, "Phase %d", _fireworkPhase);
-        _logger->Debug(buffer);
+        // char buffer[128];
+        // sprintf(buffer, "Phase %d", _fireworkPhase);
+        // _logger->Debug(buffer);
         switch (_fireworkPhase)
         {
         case 0:
+        case 6:
             dx = _randomProvider->Random(4) - 2;
             dy = _randomProvider->Random(5) - 1;
             _fireworkX = 5 + dx;
             _fireworkY = 5 + dy;
-            SetStarburstPixels(_fireworkX, _fireworkY, 0, ACOLOR_BLUE);
+            SetStarburstPixels(_fireworkX, _fireworkY, 0, ACOLOR_RED);
             break;
         case 1:
-            SetStarburstPixels(_fireworkX, _fireworkY, 1, ACOLOR_GREEN);
+        case 7:
+            SetStarburstPixels(_fireworkX, _fireworkY, 1, ACOLOR_ORANGE);
             break;
         case 2:
-            SetStarburstPixels(_fireworkX, _fireworkY, 2, ACOLOR_ORANGE);
+        case 8:
+            SetStarburstPixels(_fireworkX, _fireworkY, 2, ACOLOR_YELLOW);
             SetStarburstPixels(_fireworkX, _fireworkY, 0, ACOLOR_OFF);
             break;
         case 3:
-            SetStarburstPixels(_fireworkX, _fireworkY, 3, ACOLOR_ORANGE);
+        case 9:
+            SetStarburstPixels(_fireworkX, _fireworkY, 3, ACOLOR_WHITE);
             SetStarburstPixels(_fireworkX, _fireworkY, 1, ACOLOR_OFF);
             break;
         case 4:
+        case 10:
             SetStarburstPixels(_fireworkX, _fireworkY, 2, ACOLOR_OFF);
             break;
         case 5:
+        case 11:
             SetStarburstPixels(_fireworkX, _fireworkY, 3, ACOLOR_OFF);
-            _isFinished = true;
             break;
         default:
-            Reset();
+            _isFinished = true;
             break;
         }
 
@@ -109,7 +116,7 @@ public:
     }
 };
 
-void FireworkEffect::SetPixelSafe(int x, int y, unsigned char color)
+inline void FireworkEffect::SetPixelSafe(int x, int y, unsigned char color)
 {
     auto index = _matrixHelper->GetMatrixIndex(x, y);
     if (index < 0 || index >= _snapshot.totalCells)

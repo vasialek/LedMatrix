@@ -38,3 +38,4 @@
 .vscode/ipch
 .idea/*
 /src/main
+/.vscode/settings.json

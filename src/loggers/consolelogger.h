@@ -10,7 +10,6 @@
 
 class ConsoleLogger : public ILogger
 {
-private:
     std::string GetTime();
     void Log(const char* logLevel, const char* msg);
 
@@ -19,22 +18,22 @@ public:
     void Debug(const char* msg);
 };
 
-void ConsoleLogger::Info(const char* msg)
+inline void ConsoleLogger::Info(const char* msg)
 {
     Log("INF", msg);
 }
 
-void ConsoleLogger::Debug(const char* msg)
+inline void ConsoleLogger::Debug(const char* msg)
 {
     Log("DBG", msg);
 }
 
-void ConsoleLogger::Log(const char* logLevel, const char* msg)
+inline void ConsoleLogger::Log(const char* logLevel, const char* msg)
 {
     std::cout << GetTime() << "[" << logLevel << "] " << msg << std::endl;
 }
 
-std::string ConsoleLogger::GetTime()
+inline std::string ConsoleLogger::GetTime()
 {
     const auto now = std::chrono::system_clock::now();
     const auto time = std::chrono::system_clock::to_time_t(now);

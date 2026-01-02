@@ -10,19 +10,19 @@ protected:
     unsigned int _width = 10, _height = 10;
     unsigned int _delayMs = 1;
     unsigned long _lastMoveAt = 0;
-    int _currentColor = ACOLOR_MIN;
+    unsigned char _currentColor = ACOLOR_OFF;
     bool _isFinished = true;
 
     MatrixSnapshot _snapshot;
 
     int GetNextColor();
-    void FillMatrix(int color = ACOLOR_OFF);
+    void FillMatrix(unsigned char color = ACOLOR_OFF);
 
 public:
     bool IsFinished();
     void Restart();
-    int SetDelayMs(int delayMs);
-    int SwitchNextColor();
+    int SetDelayMs(int delayMs) override;
+    int SwitchNextColor() override;
 };
 
 inline bool BaseEffectRunner::IsFinished()
@@ -35,7 +35,7 @@ inline void BaseEffectRunner::Restart()
     _isFinished = false;
 }
 
-int BaseEffectRunner::SetDelayMs(int delayMs)
+inline int BaseEffectRunner::SetDelayMs(int delayMs)
 {
     _delayMs = delayMs;
     return _delayMs;
@@ -52,13 +52,13 @@ inline int BaseEffectRunner::GetNextColor()
     return color;
 }
 
-int BaseEffectRunner::SwitchNextColor()
+inline int BaseEffectRunner::SwitchNextColor()
 {
     _currentColor = GetNextColor();
     return _currentColor;
 }
 
-void BaseEffectRunner::FillMatrix(int color)
+inline void BaseEffectRunner::FillMatrix(unsigned char color)
 {
     if (_snapshot.cells == nullptr)
     {
