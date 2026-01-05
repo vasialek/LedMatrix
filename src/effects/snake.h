@@ -5,6 +5,7 @@
 #include "../helpers/matrixhelper.h"
 #include "../providers/randomprovider.h"
 #include "../effects/baseeffectrunner.h"
+#include "../helpers/delayhelper.h"
 
 const int MaxLength = 25;
 
@@ -21,9 +22,6 @@ class Snake : public BaseEffectRunner
 
     bool SnakeHitTarget();
     void SetNewTarget(int y);
-    int SwitchNextColor() override;
-    void DebugSnake();
-    void DebugPoint(int x, int y);
 
 public:
     Snake(IDateTimeProvider* dateTimeProvider,
@@ -35,15 +33,13 @@ public:
     void Move();
     void Reset();
     MatrixSnapshot* GetSnapshot();
-
-    ~Snake();
 };
 
-Snake::Snake(IDateTimeProvider* dateTimeProvider,
-             IRandomProvider* randomProvider,
-             MatrixHelper* matrixHelper,
-             int x, int y,
-             int dx, int dy)
+inline Snake::Snake(IDateTimeProvider* dateTimeProvider,
+                    IRandomProvider* randomProvider,
+                    MatrixHelper* matrixHelper,
+                    int x, int y,
+                    int dx, int dy)
 {
     _dateTimeProvider = dateTimeProvider;
     _randomProvider = randomProvider;
@@ -53,9 +49,8 @@ Snake::Snake(IDateTimeProvider* dateTimeProvider,
     _dx = dx;
     _dy = dy;
 
-    _snapshot.totalCells = _width * _height;
-    _snapshot.cells = new unsigned char[_width * _height];
-
+    _delayMs = 200;
+    ResetMatrixSnapshot();
     Reset();
 }
 
@@ -70,30 +65,40 @@ inline void Snake::Move()
     }
     _lastMoveAt = now;
 
-    unsigned char x = _positionX[0] + _dx;
-    unsigned char y = _positionY[0];
+    auto x = _positionX[0] + _dx;
+    auto y = _positionY[0];
     if (x < 0)
     {
         x = 0;
+        if (y < 1 && _dy < 0)
+        {
+            SwitchNextColor();
+        }
         y += _dy;
         _dx = -_dx;
     }
     else if (x >= _width)
     {
+        if (y < 1 && _dy > 0)
+        {
+            SwitchNextColor();
+        }
         x = _width - 1;
         y += _dy;
         _dx = -_dx;
     }
     if (y >= _height)
     {
-        y = _height - 1;
+        // y = _height - 1;
         _dy = -_dy;
         _dx = -_dx;
     }
     else if (y < 0)
     {
-        y = 0;
+        DelayHelper::Delay(20000);
+        // y = 0;
         _dy = -_dy;
+        _dx = -_dx;
         _currentColor = SwitchNextColor();
         for (auto i = 1; i < _length; i++)
         {
@@ -102,7 +107,9 @@ inline void Snake::Move()
         }
 
         _length = 1;
-        _isFinished = true;
+        DelayHelper::Delay(10000);
+        // _isFinished = true;
+        // return;
     }
 
     auto index = _matrixHelper->GetMatrixIndex(_positionX[_length - 1], _positionY[_length - 1]);
@@ -132,11 +139,6 @@ inline void Snake::Move()
 
     _positionX[0] = x;
     _positionY[0] = y;
-
-    if (debug)
-    {
-        DebugSnake();
-    }
 }
 
 inline void Snake::Reset()
@@ -159,7 +161,7 @@ inline MatrixSnapshot* Snake::GetSnapshot()
         _snapshot.cells[index] = _currentColor;
     }
     auto index = _matrixHelper->GetMatrixIndex(_targetX, _targetY);
-    _snapshot.cells[index] = ACOLOR_RED;
+    _snapshot.cells[index] = _currentColor;
 
     return &_snapshot;
 }
@@ -183,40 +185,4 @@ inline void Snake::SetNewTarget(int y)
     }
     _targetX = targetX;
     _targetY = targetY;
-}
-
-inline int Snake::SwitchNextColor()
-{
-    _currentColor = _currentColor == ACOLOR_BLUE ? ACOLOR_GREEN : ACOLOR_BLUE;
-    // Serial.println(_currentColor);
-    return _currentColor;
-}
-
-inline void Snake::DebugSnake()
-{
-    // Serial.print("Snake length is ");
-    // Serial.print(_length);
-    // Serial.print(": [");
-    // for (auto i = 0; i < _length; i++)
-    // {
-    // DebugPoint(_positionX[i], _positionY[i]);
-    // }
-    // Serial.println("]");
-}
-
-inline void Snake::DebugPoint(int x, int y)
-{
-    // Serial.print("(");
-    // Serial.print(x);
-    // Serial.print(", ");
-    // Serial.print(y);
-    // Serial.print(") ");
-}
-
-Snake::~Snake()
-{
-    if (_snapshot.cells != nullptr)
-    {
-        delete []_snapshot.cells;
-    }
 }

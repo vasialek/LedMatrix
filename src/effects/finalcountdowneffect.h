@@ -3,17 +3,14 @@
 #include "baseeffectrunner.h"
 #include "../interfaces/idatetimeprovider.h"
 #include "../interfaces/ieffectrunner.h"
-#include "../helpers/digitpatternhelper.h"
 
 class FinalCountdownEffect : public BaseEffectRunner
 {
-    MatrixSnapshot _snapshot;
     IDateTimeProvider* _dateTimeProvider = nullptr;
     MatrixHelper* _matrixHelper = nullptr;
     ILogger* _logger = nullptr;
     int _currentNumber;
     int _currentNumberColor;
-    unsigned long _lastNumberChangedAt;
 
 public:
     FinalCountdownEffect(IDateTimeProvider* dateTimeProvider, MatrixHelper* matrixHelper, ILogger* logger, int width, int height)
@@ -24,11 +21,10 @@ public:
         _width = width;
         _height = height;
 
-        _lastNumberChangedAt = 0;
-        _snapshot.totalCells = width * height;
-        _snapshot.cells = new unsigned char[_snapshot.totalCells];
+        _lastMoveAt = 0;
         _delayMs = 2000;
         Reset();
+        ResetMatrixSnapshot();
         DrawDigit(_currentNumber);
     }
 
@@ -42,12 +38,12 @@ public:
         }
 
         auto now = _dateTimeProvider->millis();
-        if (_lastNumberChangedAt > 0 && now - _lastNumberChangedAt < _delayMs)
+        if (_lastMoveAt > 0 && now - _lastMoveAt < _delayMs)
         {
             return;
         }
 
-        _lastNumberChangedAt = now;
+        _lastMoveAt = now;
         if (_currentNumber <= 0)
         {
             _isFinished = true;
@@ -68,7 +64,7 @@ public:
         _currentNumber = 5;
         // _currentNumber = 3;
         _currentNumberColor = ACOLOR_RED;
-        _lastNumberChangedAt = _dateTimeProvider->millis();
+        _lastMoveAt = _dateTimeProvider->millis();
     }
 
     MatrixSnapshot* GetSnapshot() override
@@ -264,14 +260,6 @@ public:
             _snapshot.cells[_matrixHelper->GetMatrixIndex(6, 8)] = ACOLOR_RED;
             _snapshot.cells[_matrixHelper->GetMatrixIndex(7, 8)] = ACOLOR_RED;
             break;
-        }
-    }
-
-    virtual ~FinalCountdownEffect()
-    {
-        if (_snapshot.cells != nullptr)
-        {
-            delete[] _snapshot.cells;
         }
     }
 };

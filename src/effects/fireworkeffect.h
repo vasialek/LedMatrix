@@ -14,13 +14,11 @@
 
 class FireworkEffect : public BaseEffectRunner
 {
-    MatrixSnapshot _snapshot;
     IDateTimeProvider* _dateTimeProvider;
     MatrixHelper* _matrixHelper;
     IRandomProvider* _randomProvider;
     ILogger* _logger;
 
-    unsigned long _lastTickAt = 0;
     int _fireworkPhase = 0;
     int _fireworkX, _fireworkY, _fireworkSize = 4;
     int _totalFireworks = 0;
@@ -35,22 +33,23 @@ public:
         _matrixHelper = matrixHelper;
         _randomProvider = randomProvider;
         _logger = logger;
+        _width = width;
+        _height = height;
 
-        _snapshot.totalCells = width * height;
-        _snapshot.cells = new unsigned char[_snapshot.totalCells];
         _delayMs = 300;
         Reset();
+        ResetMatrixSnapshot();
     }
 
     void Move() override
     {
         int dx, dy;
         auto now = _dateTimeProvider->millis();
-        if (now - _lastTickAt < _delayMs)
+        if (now - _lastMoveAt < _delayMs)
         {
             return;
         }
-        _lastTickAt = now;
+        _lastMoveAt = now;
 
         // char buffer[128];
         // sprintf(buffer, "Phase %d", _fireworkPhase);
@@ -105,14 +104,6 @@ public:
     MatrixSnapshot* GetSnapshot() override
     {
         return &_snapshot;
-    }
-
-    virtual ~FireworkEffect()
-    {
-        if (_snapshot.cells != nullptr)
-        {
-            delete[] _snapshot.cells;
-        }
     }
 };
 

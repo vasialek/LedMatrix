@@ -5,6 +5,7 @@
 #include "effects/baseeffectrunner.h"
 #include "effects/scanner.h"
 #include "effects/finalcountdowneffect.h"
+#include "effects/randompoint.h"
 #include "providers/datetimeprovider.h"
 #include "helpers/delayhelper.h"
 #include "providers/randomprovider.h"
@@ -26,6 +27,7 @@ const int NumberOfLeds = 100;
 const int LedMatrixDataPin = 2;
 
 DateTimeProvider dateTimeProvider;
+RandomProvider randomProvider;
 MatrixHelper matrixHelper;
 
 #ifdef ARDUINO
@@ -40,12 +42,13 @@ MatrixHelperNative* matrixHelperNative = new MatrixHelperNative(&matrixHelper, l
 
 #endif
 
-RandomProvider randomProvider;
+RandomPoint randomPoint(&dateTimeProvider, &randomProvider, Width, Height);
 Scanner scanner(&dateTimeProvider, &matrixHelper, Width, Height);
 FinalCountdownEffect finalCountdownEffect(&dateTimeProvider, &matrixHelper, logger, Width, Height);
 FireworkEffect fireworkEffect(&dateTimeProvider, &matrixHelper, &randomProvider, logger, Width, Height);
 // Life life(&dateTimeProvider, &randomProvider, &matrixHelper, Width, Height, 60);
-Snake snake(&dateTimeProvider, &randomProvider, &matrixHelper, 9, 0, -1, 1);
+Snake snake(&dateTimeProvider, &randomProvider, &matrixHelper, 9, 1, -1, -1);
+// Snake snake(&dateTimeProvider, &randomProvider, &matrixHelper, 9, 0, -1, 1);
 
 int effectsCount = -1;
 int currentEffectNr = 0;
@@ -109,11 +112,12 @@ int main()
 void InitializeEffects()
 {
     static BaseEffectRunner* registry[] = {
-        &scanner,
+        // &randomPoint,
+        // &scanner,
         &finalCountdownEffect,
         &fireworkEffect,
-        &scanner,
-        &snake,
+        // &scanner,
+        // &snake,
         // &life
     };
 
@@ -155,7 +159,7 @@ void ShowMatrix(MatrixSnapshot* snapshot)
 
 void DoAnimation()
 {
-    logger->Debug("Looping...");
+    // logger->Debug("Looping...");
     ClearMatrix();
 
     auto snapshot = currentEffect->GetSnapshot();
@@ -169,8 +173,9 @@ void DoAnimation()
         {
             currentEffectNr = 0;
         }
-        // char buf[32];
-        // sprintf(buf, "Effect: %d", currentEffectNr);
+        // sprintf(logger->buffer, "Effect: %d", currentEffectNr);
+        // logger->Debug(logger->buffer);
+        // DelayHelper::Delay(5000);
         // Serial.println(buf);
         currentEffect = effects[currentEffectNr];
     }
