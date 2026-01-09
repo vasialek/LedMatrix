@@ -1,16 +1,11 @@
 #pragma once
 
-#include <iostream>
-#ifndef ARDUINO
-    #include <chrono>
-    #include <ctime>
-    #include <sstream>
-    #include <iomanip>
-#endif
+#define LOG_BUFFER_SIZE 256
 
 class ILogger
 {
 public:
-    virtual void Info(const char *msg) = 0;
-    virtual void Debug(const char *msg) = 0;
+    char buffer[LOG_BUFFER_SIZE];
+    virtual void Info(const char* msg) = 0;
+    virtual void Debug(const char* msg) = 0;
 };

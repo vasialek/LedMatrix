@@ -3,7 +3,7 @@
 // #include <iostream>
 #include "unity.h"
 #include "acolors.h"
-#include "matrixhelper.h"
+#include "helpers/matrixhelper.h"
 #include "matrixsnapshot.h"
 
 MatrixHelper _testingUtilsHelper;

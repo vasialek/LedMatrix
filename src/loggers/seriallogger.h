@@ -1,47 +1,50 @@
 #pragma once
 
-#include "ilogger.h"
-#include "datetimeprovider.h"
-#include <iostream>
-#ifndef ARDUINO
-    #include <chrono>
-    #include <ctime>
-    #include <sstream>
-    #include <iomanip>
-#endif
+#ifdef ARDUINO
+#include "Arduino.h"
+#include "../interfaces/ilogger.h"
+#include "../interfaces/idatetimeprovider.h"
 
 class SerialLogger : public ILogger
 {
 private:
-    IDateTimeProvider *_dateTimeProvider = nullptr;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
     char _timeBuffer[10];
-    char *GetTime();
-    void Log(const char *logLevel, const char *msg);
-public:
-    SerialLogger(IDateTimeProvider *dateTimeProvider);
+    char _logBuffer[128];
+    char* GetTime();
+    void Log(const char* logLevel, const char* msg);
 
-    void Info(const char *msg);
-    void Debug(const char *msg);    
+public:
+    SerialLogger(IDateTimeProvider* dateTimeProvider);
+
+    void Info(const char* msg);
+    void Debug(const char* msg);
 };
 
-SerialLogger::SerialLogger(IDateTimeProvider *dateTimeProvider) {
+SerialLogger::SerialLogger(IDateTimeProvider* dateTimeProvider)
+{
     _dateTimeProvider = dateTimeProvider;
 }
 
-void SerialLogger::Log(const char *logLevel, const char *msg) {
-    // temporary, then use Serial.println()
-    std::cout << GetTime() << " [" << logLevel << "] " << msg << std::endl;
+void SerialLogger::Log(const char* logLevel, const char* msg)
+{
+    snprintf(_logBuffer, sizeof(_logBuffer), "%s [%s] %s", GetTime(), logLevel, msg);
+    // Serial.println("log");
+    Serial.println(_logBuffer);
 }
 
-void SerialLogger::Info(const char *msg) {
+void SerialLogger::Info(const char* msg)
+{
     Log("INF", msg);
 }
 
-void SerialLogger::Debug(const char *msg) {
+void SerialLogger::Debug(const char* msg)
+{
     Log("DBG", msg);
 }
 
-char *SerialLogger::GetTime() {
+char* SerialLogger::GetTime()
+{
     auto millis = _dateTimeProvider->millis();
 
     int seconds = millis / 1000;
@@ -54,3 +57,5 @@ char *SerialLogger::GetTime() {
     snprintf(_timeBuffer, 9, "%02d:%02d:%02d", hours, minutes, seconds);
     return _timeBuffer;
 }
+
+#endif

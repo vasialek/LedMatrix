@@ -1,49 +1,45 @@
 #pragma once
 
-#include "datetimeprovider.h"
-#include "matrixhelper.h"
-#include "randomprovider.h"
-#include "baseeffectrunner.h"
+#include "../models/acolors.h"
+#include "../providers/datetimeprovider.h"
+#include "../helpers/matrixhelper.h"
+#include "../providers/randomprovider.h"
+#include "../effects/baseeffectrunner.h"
+#include "../helpers/delayhelper.h"
 
 const int MaxLength = 25;
 
 class Snake : public BaseEffectRunner
 {
-private:
     int _length = 1;
     int _positionX[MaxLength];
     int _positionY[MaxLength];
     int _dx = 1, _dy = 1;
     int _targetX = 0, _targetY = 0;
-    IDateTimeProvider *_dateTimeProvider = nullptr;
-    IRandomProvider *_randomProvider = nullptr;
-    MatrixHelper *_matrixHelper = nullptr;
+    IDateTimeProvider* _dateTimeProvider = nullptr;
+    IRandomProvider* _randomProvider = nullptr;
+    MatrixHelper* _matrixHelper = nullptr;
 
     bool SnakeHitTarget();
     void SetNewTarget(int y);
-    int SwitchNextColor() override;
-    void DebugSnake();
-    void DebugPoint(int x, int y);
 
 public:
-    Snake(IDateTimeProvider *dateTimeProvider,
-            IRandomProvider *randomProvider,
-            MatrixHelper *matrixHelper,
-            int x, int y,
-            int dx, int dy);
+    Snake(IDateTimeProvider* dateTimeProvider,
+          IRandomProvider* randomProvider,
+          MatrixHelper* matrixHelper,
+          int x, int y,
+          int dx, int dy);
 
     void Move();
     void Reset();
-    MatrixSnapshot *GetSnapshot();
-    
-    ~Snake();
+    MatrixSnapshot* GetSnapshot();
 };
 
-Snake::Snake(IDateTimeProvider *dateTimeProvider,
-             IRandomProvider *randomProvider,
-             MatrixHelper *matrixHelper,
-             int x, int y,
-             int dx, int dy)
+inline Snake::Snake(IDateTimeProvider* dateTimeProvider,
+                    IRandomProvider* randomProvider,
+                    MatrixHelper* matrixHelper,
+                    int x, int y,
+                    int dx, int dy)
 {
     _dateTimeProvider = dateTimeProvider;
     _randomProvider = randomProvider;
@@ -53,13 +49,12 @@ Snake::Snake(IDateTimeProvider *dateTimeProvider,
     _dx = dx;
     _dy = dy;
 
-    _snapshot.totalCells = _width * _height;
-    _snapshot.cells = new unsigned char[_width * _height];
-
+    _delayMs = 200;
+    ResetMatrixSnapshot();
     Reset();
 }
 
-void Snake::Move()
+inline void Snake::Move()
 {
     _isFinished = false;
     bool debug = false;
@@ -75,35 +70,49 @@ void Snake::Move()
     if (x < 0)
     {
         x = 0;
+        if (y < 1 && _dy < 0)
+        {
+            SwitchNextColor();
+        }
         y += _dy;
         _dx = -_dx;
-    } else if (x >= _width)
+    }
+    else if (x >= _width)
     {
+        if (y < 1 && _dy > 0)
+        {
+            SwitchNextColor();
+        }
         x = _width - 1;
         y += _dy;
         _dx = -_dx;
     }
     if (y >= _height)
     {
-        y = _height - 1;
+        // y = _height - 1;
         _dy = -_dy;
         _dx = -_dx;
-    } else if (y < 0)
+    }
+    else if (y < 0)
     {
-        y = 0;
+        DelayHelper::Delay(20000);
+        // y = 0;
         _dy = -_dy;
+        _dx = -_dx;
         _currentColor = SwitchNextColor();
         for (auto i = 1; i < _length; i++)
         {
             auto index = _matrixHelper->GetMatrixIndex(_positionX[i], _positionY[i]);
             _snapshot.cells[index] = ACOLOR_OFF;
         }
-        
+
         _length = 1;
-        _isFinished = true;
+        DelayHelper::Delay(10000);
+        // _isFinished = true;
+        // return;
     }
 
-    auto index = _matrixHelper->GetMatrixIndex(_positionX[_length-1], _positionY[_length-1]);
+    auto index = _matrixHelper->GetMatrixIndex(_positionX[_length - 1], _positionY[_length - 1]);
     // Serial.print("Deleting point at: ");
     // DebugPoint(_positionX[_length-1], _positionY[_length-1]);
     // Serial.println();
@@ -115,6 +124,7 @@ void Snake::Move()
         if (_length >= MaxLength)
         {
             Reset();
+            _isFinished = true;
             return;
         }
         SetNewTarget(y);
@@ -123,18 +133,12 @@ void Snake::Move()
 
     for (auto i = _length - 1; i > 0; i--)
     {
-        _positionX[i] = _positionX[i-1];
-        _positionY[i] = _positionY[i-1];
+        _positionX[i] = _positionX[i - 1];
+        _positionY[i] = _positionY[i - 1];
     }
-    
 
     _positionX[0] = x;
     _positionY[0] = y;
-
-    if (debug)
-    {
-        DebugSnake();
-    }
 }
 
 inline void Snake::Reset()
@@ -149,7 +153,7 @@ inline void Snake::Reset()
     SwitchNextColor();
 }
 
-inline MatrixSnapshot *Snake::GetSnapshot()
+inline MatrixSnapshot* Snake::GetSnapshot()
 {
     for (auto i = 0; i < _length; i++)
     {
@@ -157,8 +161,8 @@ inline MatrixSnapshot *Snake::GetSnapshot()
         _snapshot.cells[index] = _currentColor;
     }
     auto index = _matrixHelper->GetMatrixIndex(_targetX, _targetY);
-    _snapshot.cells[index] = ACOLOR_RED;
-    
+    _snapshot.cells[index] = _currentColor;
+
     return &_snapshot;
 }
 
@@ -169,52 +173,16 @@ inline bool Snake::SnakeHitTarget()
 
 inline void Snake::SetNewTarget(int y)
 {
-    auto targetX = _randomProvider->Random(10);
-    auto targetY = y + _dy;
+    unsigned char targetX = _randomProvider->Random(10);
+    unsigned char targetY = y + _dy;
     if (targetY < 0)
     {
         targetY = _length > 6 ? 2 : 1;
-    } else if (targetY > _height - 1)
+    }
+    else if (targetY > _height - 1)
     {
         targetY = _height - 2;
     }
     _targetX = targetX;
     _targetY = targetY;
 }
-
-inline int Snake::SwitchNextColor()
-{
-    _currentColor = _currentColor == ACOLOR_BLUE ? ACOLOR_GREEN : ACOLOR_BLUE;
-    Serial.println(_currentColor);
-    return _currentColor;
-}
-
-inline void Snake::DebugSnake()
-{
-    Serial.print("Snake length is ");
-    Serial.print(_length);
-    Serial.print(": [");
-    for (auto i = 0; i < _length; i++)
-    {
-        DebugPoint(_positionX[i], _positionY[i]);
-    }
-    Serial.println("]");
-}
-
-inline void Snake::DebugPoint(int x, int y)
-{
-    Serial.print("(");
-    Serial.print(x);
-    Serial.print(", ");
-    Serial.print(y);
-    Serial.print(") ");
-}
-
-Snake::~Snake()
-{
-    if (_snapshot.cells != nullptr)
-    {
-        delete []_snapshot.cells;
-    }
-}
-

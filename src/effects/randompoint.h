@@ -1,48 +1,74 @@
 #pragma once
 
 #include "baseeffectrunner.h"
-#include "acolors.h"
+#include "../interfaces/idatetimeprovider.h"
+#include "../interfaces/irandomprovider.h"
+#include "../models/acolors.h"
 
 class RandomPoint : public BaseEffectRunner
 {
-private:
-    int _currentColor = ACOLOR_MIN;
+    IRandomProvider* _randomProvider;
+
+    int _currentColor = ACOLOR_OFF;
+    int _pointAt = -1;
+    int _previousPointAt = -1;
+    IDateTimeProvider* _dateTimeProvider;
+
 public:
-    RandomPoint(/* args */);
+    RandomPoint(IDateTimeProvider* dateTimeProvider, IRandomProvider* randomProvider, int width, int height);
 
-    void Move();
-    void Reset();
-    MatrixSnapshot *GetSnapshot();
-
-    ~RandomPoint();
+    void Move() override;
+    void Reset() override;
+    MatrixSnapshot* GetSnapshot() override;
 };
 
-RandomPoint::RandomPoint(/* args */)
+inline RandomPoint::RandomPoint(IDateTimeProvider* dateTimeProvider,
+                                IRandomProvider* randomProvider,
+                                int width,
+                                int height)
 {
+    _randomProvider = randomProvider;
+    _dateTimeProvider = dateTimeProvider;
+
+    _delayMs = 1000;
+
+    _width = width;
+    _height = height;
+    ResetMatrixSnapshot();
 }
 
-void RandomPoint::Move()
+inline void RandomPoint::Move()
 {
+    auto now = _dateTimeProvider->millis();
+    if (_lastMoveAt > 0 && now - _lastMoveAt < _delayMs)
+    {
+        return;
+    }
+    _lastMoveAt = now;
 
+    if (_previousPointAt >= 0)
+    {
+        _snapshot.cells[_previousPointAt] = ACOLOR_OFF;
+    }
+    _previousPointAt = _pointAt;
+    _pointAt = _randomProvider->Random(_snapshot.totalCells - 1);
+    _snapshot.cells[_pointAt] = SwitchNextColor();
+
+    if (_totalMoves++ > 10)
+    {
+        _isFinished = true;
+    }
 }
 
-void RandomPoint::Reset()
+inline void RandomPoint::Reset()
 {
-
+    _isFinished = false;
+    _totalMoves = 0;
+    _previousPointAt = _pointAt = -1;
+    FillMatrix(ACOLOR_OFF);
 }
 
-MatrixSnapshot *RandomPoint::GetSnapshot()
+inline MatrixSnapshot* RandomPoint::GetSnapshot()
 {
-
+    return &_snapshot;
 }
-
-// int RandomPoint::SwitchNextColor()
-// {
-
-// }
-
-
-RandomPoint::~RandomPoint()
-{
-}
-
